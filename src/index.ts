@@ -6,6 +6,8 @@ import knex from "knex";
 import {SetlistDbInterface, Track} from "./types/setlist";
 import {escapeRegExp} from "./helpers";
 import {Interaction} from "discord.js";
+import {SetArtistId} from "./commands/SetArtistId";
+import {SetlistfmRequestor} from "./setlistfm_requestor";
 // import {SearchSetlists} from "./commands/SearchSetlists";
 const { token } = require('../config.json');
 
@@ -33,6 +35,8 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
 export const regexPrefix = `(?:${escapeRegExp(process.env.COMMAND_PREFIX || '$s')}|${escapeRegExp(process.env.COMMAND_PREFIX_SHORT || '$setlist')})`
 
+const SetlistRequestor = new SetlistfmRequestor()
+
 client.on('ready', () => {
     console.log(`Client is logged in as ${client.user!.tag} and ready!`);
     // Set the client user's activity
@@ -49,6 +53,10 @@ client.on('interactionCreate', async (interaction: Interaction) => {
 
     if (commandName === 'show') {
         new ShowSetlist(interaction)
+        // await interaction.reply('Pong!');
+    }
+    if (commandName === 'set-artist-id') {
+        new SetArtistId(interaction, SetlistRequestor)
         // await interaction.reply('Pong!');
     }
 });

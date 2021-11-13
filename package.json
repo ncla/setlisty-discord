@@ -36,6 +36,7 @@
   "scripts": {
     "start": "yarn tsc && node dist/index.js",
     "postinstall": "./node_modules/.bin/pm2 install typescript",
+    "register": "yarn tsc && node dist/deploy-commands.js",
     "remigrate": "./node_modules/knex/bin/cli.js migrate:rollback && ./node_modules/knex/bin/cli.js migrate:latest",
     "scrape": "yarn tsc && node dist/scrape.js",
     "test": "jest"

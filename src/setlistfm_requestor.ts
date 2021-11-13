@@ -17,13 +17,19 @@ export class SetlistfmRequestor {
         })
     }
 
-    public async fetchSetlistsPage(artistId: string, page?: number) {
+    public async fetchSetlistsPage(musicbrainzId: string, page?: number) {
         const requestConfig: AxiosRequestConfig = {
             params: {
                 page
             }
         }
         console.log(requestConfig)
-        return await this.axios.get(`artist/${artistId}/setlists`, requestConfig);
+        return await this.axios.get(`artist/${musicbrainzId}/setlists`, requestConfig)
+    }
+
+    public async fetchArtistName(musicbrainzId: string): Promise<string> {
+        const response = await this.axios.get(`artist/${musicbrainzId}`)
+
+        return response.data.name
     }
 }

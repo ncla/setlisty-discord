@@ -15,6 +15,14 @@ const commands = [
             option.setName('query')
                 .setDescription('Example: "shepherd bush empire", "london 2017"')
                 .setRequired(true)
+        ),
+    new SlashCommandBuilder()
+        .setName('set-artist-id')
+        .setDescription('Set artist ID for this server!')
+        .addStringOption((option: SlashCommandStringOption) =>
+            option.setName('musicbrainz_id')
+                .setDescription('ID from Musicbrainz.org site e.g. 9c9f1380-2516-4fc9-a3e6-f9f61941d090')
+                .setRequired(true)
         )
 ].map(command => command.toJSON());
 
