@@ -8,17 +8,17 @@
     "@discordjs/rest": "^0.1.0-canary.0",
     "@type-config/standard": "^1.1.1",
     "@types/lodash": "^4.14.165",
-    "@types/node": "^14.0.14",
+    "@types/node": "^16.11.7",
     "@types/ws": "^7.2.6",
     "axios": "^0.19.2",
     "discord-api-types": "^0.24.0",
     "discord.js": "^13.3.1",
     "dotenv": "^8.2.0",
     "fuse.js": "^6.4.0",
-    "knex": "^0.21.1",
+    "knex": "^0.95.14",
     "lodash": "^4.17.20",
+    "mysql": "^2.18.1",
     "pm2": "^4.4.0",
-    "sqlite3": "^5.0.0",
     "typescript": "^4.4.4"
   },
   "devDependencies": {
@@ -36,7 +36,8 @@
   "scripts": {
     "start": "yarn tsc && node dist/index.js",
     "postinstall": "./node_modules/.bin/pm2 install typescript",
-    "test": "jest",
-    "test2": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'"
+    "remigrate": "./node_modules/knex/bin/cli.js migrate:rollback && ./node_modules/knex/bin/cli.js migrate:latest",
+    "scrape": "yarn tsc && node dist/scrape.js",
+    "test": "jest"
   }
 }
