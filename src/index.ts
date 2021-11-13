@@ -2,7 +2,6 @@ import dotenv from 'dotenv'
 const { Client, Intents } = require('discord.js');
 // import {Sync} from './commands/Sync'
 import {ShowSetlist} from './commands/ShowSetlist'
-import FuseInstance from './helpers/fuse'
 import knex from "knex";
 import {SetlistDbInterface, Track} from "./types/setlist";
 import {escapeRegExp} from "./helpers";
@@ -32,12 +31,6 @@ dotenv.config()
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
-// TODO: Force await?
-let Fuse = new FuseInstance()
-Fuse.load().then(() => {
-    console.log('Fuse instance ready')
-})
-
 export const regexPrefix = `(?:${escapeRegExp(process.env.COMMAND_PREFIX || '$s')}|${escapeRegExp(process.env.COMMAND_PREFIX_SHORT || '$setlist')})`
 
 client.on('ready', () => {
@@ -55,7 +48,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     const { commandName } = interaction;
 
     if (commandName === 'show') {
-        // new ShowSetlist(interaction, Fuse)
+        new ShowSetlist(interaction)
         // await interaction.reply('Pong!');
     }
 });

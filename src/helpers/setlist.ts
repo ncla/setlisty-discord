@@ -23,8 +23,8 @@ export async function getFullSetlistData(setlistId: string) {
     }
 
     let tracksDb = await knexClient<Track>('setlist_tracks')
-        .where({id: setlistId})
-        .orderBy('order_nr_overall', 'asc')
+        .where({setlist_id: setlistId})
+        .orderBy('order_number', 'asc')
 
     return new Setlist(<SetlistOptions>{ id: setlist.id, date: setlist.date, url: setlist.url, tracks: tracksDb, venue: venueObj })
 }
@@ -55,11 +55,11 @@ export class Setlist implements SetlistInterface {
         let encore = 0
 
         for (const track of this.tracks) {
-            const newline = encore != track.encore
-            text += `${track.order_nr_overall + 1}. ${track.tape ? '🖭' : ''} **${track.name}** `
+            const newline = encore != track.set_number
+            text += `${track.order_number + 1}. ${track.tape ? '🖭' : ''} **${track.name}** `
                 + `${track.note ? ` (*${track.note}*)` : ''}`
                 + `\n${newline ? '\n' : ''}`
-            encore = track.encore
+            encore = track.set_number
         }
 
         return text

@@ -14,6 +14,7 @@ const commands = [
         .addStringOption((option: SlashCommandStringOption) =>
             option.setName('query')
                 .setDescription('Example: "shepherd bush empire", "london 2017"')
+                .setRequired(true)
         )
 ].map(command => command.toJSON());
 

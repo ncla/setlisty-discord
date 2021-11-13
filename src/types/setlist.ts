@@ -10,13 +10,12 @@ export interface SetlistDbInterface {
 }
 
 export interface Track {
-    id: string,
+    setlist_id: string,
     name: string,
     tape: boolean,
-    encore: number,
+    set_number: number,
     note: string,
-    order_nr_in_set: number,
-    order_nr_overall: number
+    order_number: number
 }
 
 export type Venue = {
