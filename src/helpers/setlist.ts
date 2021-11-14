@@ -87,7 +87,7 @@ export async function findOrInsertArtist(musicbrainzId: string): Promise<number>
 
     const inserted = await knexClient('artists').insert({
         musicbrainz_id: musicbrainzId,
-        artist_name: 'Muse'
+        artist_name: 'Muse' // todo
     })
 
     return inserted[0]

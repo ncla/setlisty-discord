@@ -1,10 +1,21 @@
-// SELECT *, MATCH (venue_name, city_name, state_name, country_name) AGAINST ('bush empire' IN NATURAL LANGUAGE MODE) AS score FROM setlisty.setlists ORDER BY score DESC
 exports.up = function(knex) {
     return Promise.all([
         knex.schema.createTable('artists', (table) => {
             table.increments('id')
             table.string('musicbrainz_id').unique().notNullable()
             table.string('artist_name').notNullable()
+        }),
+        knex.schema.createTable('artist_update_jobs', (table) => {
+            table.increments('id')
+            table.integer('artist_id').unsigned().notNullable()
+            table.enum('status', ['IN_PROGRESS', 'ERROR', 'COMPLETED']).notNullable()
+            table.text('debug', 'longtext')
+            table.timestamps(true, true)
+
+            table
+                .foreign('artist_id')
+                .references('id')
+                .inTable('artists');
         }),
         knex.schema.createTable('discord_guilds', (table) => {
             table.increments('id')
@@ -61,6 +72,7 @@ exports.up = function(knex) {
 };
 
 exports.down = async function(knex) {
+    await knex.schema.dropTable('artist_update_jobs')
     await knex.schema.dropTable('discord_guilds')
     await knex.schema.dropTable('setlist_tracks')
     await knex.schema.dropTable('setlists')
