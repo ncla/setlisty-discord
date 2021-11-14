@@ -17,8 +17,7 @@ services:
 
   bot:
     depends_on: 
-      db:
-        condition: service_healthy
+      - db
     healthcheck:
       test: ["CMD", "ps", "aux", "|", "grep", "nodemon"]
       interval: 1s
@@ -33,10 +32,8 @@ services:
 
   scraper:
     depends_on:
-      db:
-        condition: service_healthy
-      bot:
-        condition: service_healthy
+      - db
+      - bot
     container_name: setlist_scraper
     image: node:16-alpine3.14
     volumes:
