@@ -8,8 +8,8 @@ import {escapeRegExp} from "./helpers";
 import {Interaction} from "discord.js";
 import {SetArtistId} from "./commands/SetArtistId";
 import {SetlistfmRequestor} from "./setlistfm_requestor";
+import Config from "./config";
 // import {SearchSetlists} from "./commands/SearchSetlists";
-const { token } = require('../config.json');
 
 // See: http://knexjs.org/#typescript-support
 // declare module 'knex/types/tables' {
@@ -75,7 +75,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
 //     // Add shorthand at end
 // });
 
-client.login(token)
+client.login(Config.discord.token)
 
 // Search for setlists
 // $setlist search|show venue|city|country|track|tracknote {search}

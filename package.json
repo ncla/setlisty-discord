@@ -45,10 +45,13 @@
     "watch": "./node_modules/nodemon/bin/nodemon.js",
     "dev": "yarn install && yarn run migrate && yarn run watch",
 
-    "knex": "./node_modules/knex/bin/cli.js",
+    "knex": "./node_modules/knex/bin/cli.js --knexfile knexfile.ts",
     "migrate": "yarn run knex migrate:latest",
     "rollback": "yarn run knex migrate:rollback",
     "remigrate": "yarn run rollback && yarn run migrate",
+
+    "start-docker": "cd docker && docker-compose up -d",
+    "docker": "docker exec -it setlist_bot",
 
     "test": "jest"
   }

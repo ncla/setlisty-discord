@@ -1,9 +1,5 @@
-import knex from "knex";
 import SetlistUpdater from "./setlist";
-
-const env: string = process.env.NODE_ENV || 'development'
-const knexConfig = require('../knexfile')[env]
-const knexClient = knex(knexConfig)
+import knexClient from "./helpers/knexClient";
 
 async function getFirstNeverUpdatedArtist() {
     return await knexClient('artists')

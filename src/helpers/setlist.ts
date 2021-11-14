@@ -1,10 +1,6 @@
-import knex from 'knex';
+import knexClient from "./knexClient";
 import {SetlistDbInterface, SetlistInterface, SetlistOptions, Track, Venue} from '../types/setlist';
 import { map } from 'lodash';
-
-const env: string = process.env.NODE_ENV || 'development'
-const knexConfig = require('../../knexfile')[env]
-const knexClient = knex(knexConfig)
 
 export async function getFullSetlistData(setlistId: string) {
     let setlist = await knexClient<SetlistDbInterface>('setlists').where({id: setlistId}).first()

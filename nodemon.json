@@ -1,0 +1,6 @@
+{
+  "watch": ["*"],
+  "ignore": ["dist/"],
+  "ext": "ts,js,env,json",
+  "exec": "yarn run start"
+}

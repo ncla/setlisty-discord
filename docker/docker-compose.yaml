@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  db:
+    container_name: setlist_mysql
+    image: mysql:8.0.23
+    command: mysqld --default-authentication-plugin=mysql_native_password --skip-log-bin
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+    volumes:
+      - ./mysql:/var/lib/mysql
+    env_file:
+      - ../.env
+
+  bot:
+    depends_on: 
+      db:
+        condition: service_healthy
+    container_name: setlist_bot
+    image: node:16-alpine3.14
+    volumes:
+      - ../:/app
+    working_dir: /app
+    command: yarn run dev
+    env_file:
+      - ../.env

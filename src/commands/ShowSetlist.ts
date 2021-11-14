@@ -1,11 +1,7 @@
 import Discord, {MessageEmbed} from 'discord.js'
-import knex from 'knex';
 import {getFullSetlistData} from '../helpers/setlist';
 import {Interaction} from "discord.js";
-
-const env: string = process.env.NODE_ENV || 'development'
-const knexConfig = require('../../knexfile')[env]
-const knexClient = knex(knexConfig)
+import knexClient from "../helpers/knexClient";
 
 export class ShowSetlist {
     public interaction: Interaction

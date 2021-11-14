@@ -4,8 +4,7 @@ import {groupBy} from "./helpers";
 import * as util from "util";
 import {findOrInsertArtist} from "./helpers/setlist";
 const env: string = process.env.NODE_ENV || 'development'
-const knexConfig = require('../knexfile')[env]
-const knexClient = knex(knexConfig)
+import knexClient from "./helpers/knexClient";
 const { musicbrainzApiKey } = require('../config.json');
 
 class SetlistUpdater {

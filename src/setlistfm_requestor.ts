@@ -1,18 +1,16 @@
 import axios, {AxiosInstance, AxiosRequestConfig, AxiosResponse} from 'axios';
-const { musicbrainzApiKey } = require('../config.json');
-
-const SETLISTFM_BASE_API_URL = 'https://api.setlist.fm/rest/1.0/'
+import Config from "./config";
 
 export class SetlistfmRequestor {
     private axios: AxiosInstance;
 
     public constructor() {
         this.axios = axios.create({
-            baseURL: SETLISTFM_BASE_API_URL,
+            baseURL: Config.setlistfm.baseURL,
             timeout: 15000,
             headers: {
                 'accept': 'application/json',
-                'x-api-key': musicbrainzApiKey
+                'x-api-key': Config.setlistfm.apiKey
             }
         })
     }

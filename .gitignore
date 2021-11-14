@@ -1,8 +1,7 @@
 config.json
-/node_modules
-.env
-.env.example
+node_modules/
 .history/
 .idea/
-/dist
-docker/mysql
+dist/
+docker/mysql/
+.env
