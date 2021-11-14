@@ -61,7 +61,7 @@ async function execute() {
 
     const jobId = await createArtistUpdateJob(artist.id)
     try {
-        let updater = new SetlistUpdater('asdfasdfasdf');
+        let updater = new SetlistUpdater(artist.musicbrainz_id);
         await updater.run()
     } catch (err) {
         return updateArtistUpdateJob(jobId, 'ERROR', JSON.stringify(err))
