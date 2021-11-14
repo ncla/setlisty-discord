@@ -52,7 +52,10 @@
     "remigrate": "yarn run rollback && yarn run migrate",
 
     "start-docker": "cd docker && docker-compose up -d",
-    "docker": "docker exec -it setlist_bot",
+    "attach-bot": "docker exec -it setlist_bot sh",
+    "attach-scraper": "docker exec -it setlist_scraper sh",
+    "logs-bot": "docker logs -tf setlist_bot",
+    "logs-scraper": "docker logs -tf setlist_scraper",
 
     "test": "jest"
   }
