@@ -15,9 +15,11 @@
     "discord.js": "^13.3.1",
     "dotenv": "^8.2.0",
     "fuse.js": "^6.4.0",
+    "global": "^4.4.0",
     "knex": "^0.95.14",
     "lodash": "^4.17.20",
     "mysql": "^2.18.1",
+    "nodemon": "^2.0.15",
     "pm2": "^4.4.0",
     "typescript": "^4.4.4"
   },
@@ -31,14 +33,22 @@
     "jest": "^26.6.3",
     "mocha": "^8.4.0",
     "ts-jest": "^26.5.6",
-    "ts-node": "^10.4.0"
+    "ts-node": "^10.4.0",
+    "nodemon": "^2.0.15"
   },
   "scripts": {
     "start": "yarn tsc && node dist/index.js",
-    "postinstall": "./node_modules/.bin/pm2 install typescript",
     "register": "yarn tsc && node dist/deploy-commands.js",
-    "remigrate": "./node_modules/knex/bin/cli.js migrate:rollback && ./node_modules/knex/bin/cli.js migrate:latest",
     "scrape": "yarn tsc && node dist/scrape.js",
+
+    "watch": "./node_modules/nodemon/bin/nodemon.js",
+    "dev": "yarn install && yarn run migrate && yarn run watch",
+
+    "knex": "./node_modules/knex/bin/cli.js",
+    "migrate": "yarn run knex migrate:latest",
+    "rollback": "yarn run knex migrate:rollback",
+    "remigrate": "yarn run rollback && yarn run migrate",
+
     "test": "jest"
   }
 }
