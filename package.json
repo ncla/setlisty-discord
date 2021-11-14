@@ -12,7 +12,7 @@
     "@types/ws": "^7.2.6",
     "axios": "^0.19.2",
     "discord-api-types": "^0.24.0",
-    "discord.js": "^13.3.1",
+    "discord.js": "https://github.com/thehackerboi69github/discord.js.git#b8dabca31eb1f99fad38f86c4623de4c9eee3c31",
     "dotenv": "^8.2.0",
     "fuse.js": "^6.4.0",
     "global": "^4.4.0",
