@@ -18,6 +18,13 @@ export class ShowSetlist {
     protected async invoke() {
         if (!this.interaction.isCommand()) return;
 
+        if (!this.interaction.inGuild()) {
+            return this.interaction.reply({
+                content: 'Sorry, this bot is not available through DMs',
+                ephemeral: true
+            })
+        }
+
         const query = this.interaction.options.getString('query')
 
         const guildId = this.interaction.guildId

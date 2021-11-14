@@ -23,6 +23,13 @@ export class SetArtistId {
         console.log(this.interaction.guild?.ownerId, this.interaction.user.id)
         const isOwner = this.interaction.guild?.ownerId === this.interaction.user.id
 
+        if (!this.interaction.inGuild()) {
+            return this.interaction.reply({
+                content: 'Sorry, this bot is not available through DMs',
+                ephemeral: true
+            })
+        }
+
         if (!isOwner) {
             return this.interaction.reply({
                 content: 'Only the owner of this server can set the artist ID',
@@ -45,28 +52,43 @@ export class SetArtistId {
         } catch (err) {
             // todo: handle not found exception better
             return this.interaction.reply({
-                content: 'Artist not found',
+                content: 'Artist was not found with this Musicbrainz ID',
                 ephemeral: true
             })
         }
 
         console.log(artistName)
-        // todo: artist_id izvilkt, tad if insertedArtist
 
-        const insertedArtist = await knexClient('artists').insert({
-            musicbrainz_id: musicbrainzId,
-            artist_name: artistName
-        }).onConflict('musicbrainz_id').ignore()
+        const artistInDb = await knexClient('artists')
+            .where({
+                musicbrainz_id: musicbrainzId
+            })
+            .first()
 
-        console.log(insertedArtist)
+        let artistId;
+
+        if (!artistInDb) {
+            const insertedArtist = await knexClient('artists').insert({
+                musicbrainz_id: musicbrainzId,
+                artist_name: artistName
+            })
+
+            artistId = insertedArtist[0]
+        } else {
+            artistId = artistInDb.id
+        }
 
         await knexClient('discord_guilds')
             .insert({
                 guild_id: this.interaction.guildId,
-                artist_id: insertedArtist[0]
+                artist_id: artistId
             })
             .onConflict('guild_id')
             .merge()
 
+        return this.interaction.reply({
+            content: 'Artist on this server has been set to: ' + artistName,
+            ephemeral: true
+        })
     }
 }
