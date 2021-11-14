@@ -40,7 +40,8 @@
     "start": "yarn tsc && node dist/index.js",
     "register": "yarn tsc && node dist/deploy-commands.js",
     "scrape": "yarn tsc && node dist/scrape.js",
-    "work": "yarn tsc && node dist/execute_artist_job.js",
+    "work": "yarn tsc && yarn run scrape-one",
+    "scrape-one": "node dist/execute_artist_job.js",
 
     "watch": "./node_modules/nodemon/bin/nodemon.js",
     "dev": "yarn install && yarn run migrate && yarn run watch",

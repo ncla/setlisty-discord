@@ -5,7 +5,7 @@ import * as util from "util";
 import {findOrInsertArtist} from "./helpers/setlist";
 const env: string = process.env.NODE_ENV || 'development'
 import knexClient from "./helpers/knexClient";
-const { musicbrainzApiKey } = require('../config.json');
+import Config from "./config";
 
 class SetlistUpdater {
     public musicbrainzId: string
@@ -19,11 +19,11 @@ class SetlistUpdater {
         this.musicbrainzId = musicbrainzId
 
         this.axios = axios.create({
-            baseURL: 'https://api.setlist.fm/rest/1.0/',
+            baseURL: Config.setlistfm.baseURL,
             timeout: 15000,
             headers: {
                 'accept': 'application/json',
-                'x-api-key': musicbrainzApiKey
+                'x-api-key': Config.setlistfm.apiKey
             }
         })
     }

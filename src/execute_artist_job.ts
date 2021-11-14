@@ -70,4 +70,4 @@ async function execute() {
     return await updateArtistUpdateJob(jobId, 'COMPLETED')
 }
 
-execute()
+execute().then(() => knexClient.destroy())
