@@ -1,10 +1,12 @@
 #!/bin/sh
 set -e
 
-if [ "${APP_TYPE}" = "SCRAPER" ]; then
-  watch -n 1 node execute_artist_job.js
-elif [ "${APP_TYPE}" = "BOT" ]; then
-  node index.js
+if [ "${1}" = "run_worker" ]; then
+  watch -n 1 node dist/execute_artist_job.js
+elif [ "${1}" = "run_bot" ]; then
+  node dist/index.js
+elif [ "${1}" = "migrate" ]; then
+  yarn run migrate
 else
-  echo expected APP_TYPE env variable to be SCRAPER or BOT, but "${APP_TYPE}" found
+  echo expected run_worker, run_bot or migrate, got "${1}" instead
 fi
