@@ -27,13 +27,6 @@ export class AutocompleteArtists {
             return await this.interaction.respond([]);
         }
 
-        const requestor = axios.create({
-            timeout: 2500,
-            headers: {
-                'accept': 'application/json',
-            }
-        })
-
         let response: AxiosResponse;
 
         try {
@@ -44,7 +37,7 @@ export class AutocompleteArtists {
 
         return await this.interaction.respond(response.data.artists.map((value: any) => {
             return {
-                'name': `${value.name} ${value.disambiguation ? ' – ' + value.disambiguation : ''}`,
+                'name': `${value.name}${value.disambiguation ? ' – ' + value.disambiguation : ''}`,
                 'value': value.id
             }
         }) ?? [])
