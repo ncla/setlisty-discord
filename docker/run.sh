@@ -8,7 +8,7 @@ elif [ "${1}" = "run_bot" ]; then
 elif [ "${1}" = "migrate" ]; then
   yarn run migrate
 elif [ "${1}" = "register" ]; then
-  yarn run register
+  node dist/deploy-commands.js
 else
   echo expected run_worker, run_bot, migrate or register, got "${1}" instead
 fi
