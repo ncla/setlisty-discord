@@ -8,7 +8,7 @@ const { Routes } = require('discord-api-types/v9');
 const commands = [
     {
         name: 'show',
-        description: 'Search and show a setlist!',
+        description: 'Search and show a setlist',
         options: [
             {
                 type: 3,
@@ -17,25 +17,32 @@ const commands = [
                 required: true,
                 autocomplete: true
             }
-        ],
-        default_permission: undefined
+        ]
     },
-    new SlashCommandBuilder()
-        .setName('set-artist-id')
-        .setDescription('Set artist ID for this server!')
-        .addStringOption((option: SlashCommandStringOption) =>
-            option.setName('musicbrainz_id')
-                .setDescription('ID from Musicbrainz.org site e.g. 9c9f1380-2516-4fc9-a3e6-f9f61941d090')
-                .setRequired(true)
-        )
-        .toJSON()
+    {
+        name: 'set-artist',
+        description: 'Search and set artist on this server from the provided search results',
+        options: [
+            {
+                type: 3,
+                name: 'name',
+                description: 'Set artist ID by choosing an artist from returned auto-complete search results',
+                autocomplete: true
+            },
+            {
+                type: 3,
+                name: 'id',
+                description: 'Set artist Musicbrainz ID manually'
+            }
+        ]
+    }
 ]
 
 const rest = new REST({ version: '9' }).setToken(Config.discord.token);
 
 rest.put(
-    // Routes.applicationCommands(Config.discord.clientId),
-    Routes.applicationGuildCommands(Config.discord.clientId, Config.discord.guildId),
+    Routes.applicationCommands(Config.discord.clientId),
+    // Routes.applicationGuildCommands(Config.discord.clientId, Config.discord.guildId),
     { body: commands }
 )
 .then(() => console.log('Successfully registered application commands.'))

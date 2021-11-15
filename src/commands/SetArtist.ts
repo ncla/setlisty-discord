@@ -2,7 +2,7 @@ import {Interaction} from "discord.js";
 import {SetlistfmRequestor} from "../setlistfm_requestor";
 import knexClient from "../helpers/knexClient";
 
-export class SetArtistId {
+export class SetArtist {
     public interaction: Interaction
     protected requestor: SetlistfmRequestor
 
@@ -14,7 +14,7 @@ export class SetArtistId {
 
     protected async invoke() {
         if (!this.interaction.isCommand()) return;
-        console.log(this.interaction.guild?.ownerId, this.interaction.user.id)
+
         const isOwner = this.interaction.guild?.ownerId === this.interaction.user.id
 
         if (!this.interaction.inGuild()) {
@@ -31,9 +31,21 @@ export class SetArtistId {
             })
         }
 
-        const musicbrainzId = this.interaction.options.getString('musicbrainz_id')
+        const mbIdFromIdOption = this.interaction.options.getString('id')
+        const mbIdFromNameOption = this.interaction.options.getString('name')
 
-        if (!musicbrainzId) {
+        if (mbIdFromNameOption === null && mbIdFromIdOption === null) {
+            return this.interaction.reply({
+                content: 'ID or name is required',
+                ephemeral: true
+            })
+        }
+
+        const mbId = mbIdFromIdOption ?? mbIdFromNameOption
+
+        console.log(mbId)
+
+        if (!mbId) {
             return this.interaction.reply({
                 content: 'Musicbrainz ID must be valid',
                 ephemeral: true
@@ -42,7 +54,7 @@ export class SetArtistId {
 
         let artistName;
         try {
-            artistName = await this.requestor.fetchArtistName(musicbrainzId)
+            artistName = await this.requestor.fetchArtistName(mbId)
         } catch (err) {
             // todo: handle not found exception better
             return this.interaction.reply({
@@ -55,7 +67,7 @@ export class SetArtistId {
 
         const artistInDb = await knexClient('artists')
             .where({
-                musicbrainz_id: musicbrainzId
+                musicbrainz_id: mbId
             })
             .first()
 
@@ -63,7 +75,7 @@ export class SetArtistId {
 
         if (!artistInDb) {
             const insertedArtist = await knexClient('artists').insert({
-                musicbrainz_id: musicbrainzId,
+                musicbrainz_id: mbId,
                 artist_name: artistName
             })
 
@@ -81,7 +93,7 @@ export class SetArtistId {
             .merge()
 
         return this.interaction.reply({
-            content: 'Artist on this server has been set to: ' + artistName,
+            content: 'Artist for this server has been set to: ' + artistName,
             ephemeral: true
         })
     }

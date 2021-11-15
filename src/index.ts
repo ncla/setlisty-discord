@@ -1,10 +1,12 @@
+import {AutocompleteArtists} from "./autocomplete/Artists";
+
 const { Client, Intents } = require('discord.js');
 import {ShowSetlist} from './commands/ShowSetlist'
 import {Interaction} from "discord.js";
-import {SetArtistId} from "./commands/SetArtistId";
 import {SetlistfmRequestor} from "./setlistfm_requestor";
 import Config from "./config";
-import {AutocompleteSetlists} from "./autocomplete/setlists";
+import {AutocompleteSetlists} from "./autocomplete/Setlists";
+import {SetArtist} from "./commands/SetArtist";
 
 // See: http://knexjs.org/#typescript-support
 // declare module 'knex/types/tables' {
@@ -37,17 +39,21 @@ client.on('ready', () => {
 
 client.on('interactionCreate', async (interaction: Interaction) => {
     if (interaction.isAutocomplete() && interaction.commandName === 'show') {
-        new AutocompleteSetlists(interaction)
+        return new AutocompleteSetlists(interaction)
+    }
+
+    if (interaction.isAutocomplete() && interaction.commandName === 'set-artist') {
+        return new AutocompleteArtists(interaction)
     }
 
     if (!interaction.isCommand()) return;
 
     if (interaction.commandName === 'show') {
-        new ShowSetlist(interaction)
+        return new ShowSetlist(interaction)
     }
 
-    if (interaction.commandName === 'set-artist-id') {
-        new SetArtistId(interaction, SetlistRequestor)
+    if (interaction.commandName === 'set-artist') {
+        return new SetArtist(interaction, SetlistRequestor)
     }
 });
 
