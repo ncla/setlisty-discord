@@ -41,7 +41,7 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: cd /opt/setlisty && sh update.sh
