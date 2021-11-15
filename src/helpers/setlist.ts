@@ -1,6 +1,7 @@
 import knexClient from "./knexClient";
 import {SetlistDbInterface, SetlistInterface, SetlistOptions, Track, Venue} from '../types/setlist';
 import { map } from 'lodash';
+import dayjs from "dayjs";
 
 export async function getFullSetlistData(setlistId: string) {
     let setlist = await knexClient<SetlistDbInterface>('setlists').where({id: setlistId}).first()
@@ -66,11 +67,15 @@ export class Setlist implements SetlistInterface {
     }
 
     public getDateText (): string {
-        return `${this.date}`
+        return `${dayjs(this.date).format('YYYY-MM-DD')}`
     }
 
     public getLocationAndDateText (): string {
         return `${this.getFullLocationText()} | ${this.getDateText()}`
+    }
+
+    public getAutocompleteChoiceTitle(): string {
+        return `${this.getDateText()} – ${this.getFullLocationText()}`
     }
 }
 
