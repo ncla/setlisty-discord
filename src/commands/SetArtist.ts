@@ -1,14 +1,14 @@
 import {Interaction} from "discord.js";
-import {SetlistfmRequestor} from "../setlistfm_requestor";
 import knexClient from "../helpers/knexClient";
+import {SetlistfmRequestClient} from "../request/SetlistFm";
 
 export class SetArtist {
     public interaction: Interaction
-    protected requestor: SetlistfmRequestor
+    protected setlistFmClient: SetlistfmRequestClient
 
-    public constructor(interaction: Interaction, requestor: SetlistfmRequestor) {
+    public constructor(interaction: Interaction, setlistFmRequestClient: SetlistfmRequestClient) {
         this.interaction = interaction
-        this.requestor = requestor;
+        this.setlistFmClient = setlistFmRequestClient;
         this.invoke()
     }
 
@@ -54,7 +54,7 @@ export class SetArtist {
 
         let artistName;
         try {
-            artistName = await this.requestor.fetchArtistName(mbId)
+            artistName = await this.setlistFmClient.fetchArtistName(mbId)
         } catch (err) {
             // todo: handle not found exception better
             return this.interaction.reply({

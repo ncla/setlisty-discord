@@ -1,5 +1,6 @@
-import SetlistUpdater from "./setlist";
+import SetlistUpdater from "./setlist-updater";
 import knexClient from "./helpers/knexClient";
+import {SetlistfmRequestClient} from "./request/SetlistFm";
 
 async function getFirstNeverUpdatedArtist() {
     return await knexClient('artists')
@@ -61,7 +62,7 @@ async function execute() {
 
     const jobId = await createArtistUpdateJob(artist.id)
     try {
-        let updater = new SetlistUpdater(artist.musicbrainz_id);
+        let updater = new SetlistUpdater(artist.musicbrainz_id, new SetlistfmRequestClient());
         await updater.run()
     } catch (err) {
         return updateArtistUpdateJob(jobId, 'ERROR', JSON.stringify(err))

@@ -1,7 +1,7 @@
 import axios, {AxiosInstance, AxiosRequestConfig, AxiosResponse} from 'axios';
-import Config from "./config";
+import Config from "../config";
 
-export class SetlistfmRequestor {
+export class SetlistfmRequestClient {
     private axios: AxiosInstance;
 
     public constructor() {
@@ -21,7 +21,7 @@ export class SetlistfmRequestor {
                 page
             }
         }
-        console.log(requestConfig)
+
         return await this.axios.get(`artist/${musicbrainzId}/setlists`, requestConfig)
     }
 

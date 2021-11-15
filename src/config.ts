@@ -16,6 +16,9 @@ export default {
         baseURL: getEnvVariable('SETLIST_FM_BASE_URL'),
         apiKey: getEnvVariable('SETLIST_FM_API_KEY')
     },
+    musicbrainz: {
+        baseURL: getEnvVariable('MUSICBRAINZ_BASE_URL'),
+    },
     knex: {
         client: getEnvVariable('DB_CLIENT'),
         connection: {

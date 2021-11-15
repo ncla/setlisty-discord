@@ -1,11 +1,9 @@
 import axios, {AxiosInstance, AxiosResponse} from 'axios';
-import knex from 'knex';
 import {groupBy} from "./helpers";
-import * as util from "util";
 import {findOrInsertArtist} from "./helpers/setlist";
-const env: string = process.env.NODE_ENV || 'development'
 import knexClient from "./helpers/knexClient";
 import Config from "./config";
+import {SetlistfmRequestClient} from "./request/SetlistFm";
 
 class SetlistUpdater {
     public musicbrainzId: string
@@ -13,19 +11,11 @@ class SetlistUpdater {
     protected responses: any[] = []
     protected setlists: any[] = []
     protected setlistTracks: any[] = []
-    private axios: AxiosInstance;
+    private setlistRequestClient: SetlistfmRequestClient
 
-    public constructor(musicbrainzId: string) {
+    public constructor(musicbrainzId: string, setlistRequestClient: SetlistfmRequestClient) {
         this.musicbrainzId = musicbrainzId
-
-        this.axios = axios.create({
-            baseURL: Config.setlistfm.baseURL,
-            timeout: 15000,
-            headers: {
-                'accept': 'application/json',
-                'x-api-key': Config.setlistfm.apiKey
-            }
-        })
+        this.setlistRequestClient = setlistRequestClient;
     }
 
     public async run() {
@@ -45,23 +35,16 @@ class SetlistUpdater {
     }
 
     public async fetchAllSetlists(musicbrainzId: string) {
-        const firstPage = await this.axios.get(`artist/${musicbrainzId}/setlists`)
-        // console.log(firstPage, firstPage.data)
-        // console.log(util.inspect(firstPage, {showHidden: false, depth: null, colors: true}))
-        // return;
-        // console.log('eee')
-        // console.dir(firstPage.data, { depth: null });
+        const firstPage = await this.setlistRequestClient.fetchSetlistsPage(musicbrainzId)
 
         const pageCount = Math.ceil(firstPage.data.total / firstPage.data.itemsPerPage)
-        // const pageCount = 2
 
         this.responses.push(firstPage)
 
         let page = 2
 
         while (page <= pageCount) {
-            await this.axios.get(`artist/${musicbrainzId}/setlists?p=${page}`).then(response => {
-                // console.log(page, response.data.page)
+            await this.setlistRequestClient.fetchSetlistsPage(musicbrainzId, page).then(response => {
                 this.responses.push(response)
                 page++
             })
