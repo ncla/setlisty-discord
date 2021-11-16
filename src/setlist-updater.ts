@@ -67,6 +67,7 @@ class SetlistUpdater {
         let eventDate = `${parts[2]}-${parts[1]}-${parts[0]}`
         console.log(eventDate)
         // expected 1975-12-25, have 12-09-2019
+        // TODO: Key by setlist ID?
         this.setlists.push({
             id: setlist.id,
             artist_id: this.artistIdInDb,
@@ -86,6 +87,7 @@ class SetlistUpdater {
                 // There are some edge cases where there is no name, such as for Unknown songs.
                 if (songItem.name === '') return
 
+                // TODO: Key by setlist ID?
                 this.setlistTracks.push({
                     setlist_id: setlist.id,
                     name: songItem.name,
@@ -123,7 +125,7 @@ class SetlistUpdater {
                 await knexClient('setlists').insert(setlist)
             }
         }
-
+        // Grouping here does not guarantee that same track won't be inserted multiple times
         const tracksGroupedBySetlistId: Array<any> = groupBy(this.setlistTracks, 'setlist_id')
 
         for (const [setlistId, setlistTracks] of Object.entries(tracksGroupedBySetlistId)) {

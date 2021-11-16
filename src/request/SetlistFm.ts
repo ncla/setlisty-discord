@@ -18,7 +18,7 @@ export class SetlistfmRequestClient {
     public async fetchSetlistsPage(musicbrainzId: string, page?: number) {
         const requestConfig: AxiosRequestConfig = {
             params: {
-                page
+                p: page
             }
         }
 
