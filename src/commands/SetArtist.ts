@@ -92,8 +92,14 @@ export class SetArtist {
             .onConflict('guild_id')
             .merge()
 
+        let message = 'Artist for this server has been set to: ' + artistName
+
+        if (!artistInDb) {
+            message += '\nPlease allow up to 5 minutes for the system to fetch all the artist setlists!'
+        }
+
         return this.interaction.reply({
-            content: 'Artist for this server has been set to: ' + artistName,
+            content: message,
             ephemeral: true
         })
     }
