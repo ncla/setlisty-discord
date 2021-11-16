@@ -1,5 +1,6 @@
 import {AutocompleteInteraction} from "discord.js";
 import knexClient from "../helpers/knexClient";
+import {getFullSetlistData} from "../helpers/setlist";
 
 export class AutocompleteSetlists {
     public interaction: AutocompleteInteraction
@@ -39,11 +40,18 @@ export class AutocompleteSetlists {
             })
             .limit(10)
 
-        return await this.interaction.respond(setlists.map(value => {
+        const transformToChoices = async (setlistDbRecord: any) => {
+            const setlistObject = await getFullSetlistData(setlistDbRecord.id);
+
             return {
-                'name': value.searchable_full_name,
-                'value': value.searchable_full_name
+                'name': setlistObject.getAutocompleteChoiceTitle(),
+                'value': setlistDbRecord.searchable_full_name
             }
-        }) ?? [])
+        };
+
+        const unresolvedPromises = setlists.map(itemDb => transformToChoices(itemDb));
+        const results = await Promise.all(unresolvedPromises);
+
+        return await this.interaction.respond(results ?? [])
     }
 }

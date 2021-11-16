@@ -3,10 +3,11 @@ import {AutocompleteArtists} from "./autocomplete/Artists";
 const { Client, Intents } = require('discord.js');
 import {ShowSetlist} from './commands/ShowSetlist'
 import {Interaction} from "discord.js";
-import {SetlistfmRequestor} from "./setlistfm_requestor";
 import Config from "./config";
 import {AutocompleteSetlists} from "./autocomplete/Setlists";
 import {SetArtist} from "./commands/SetArtist";
+import {SetlistfmRequestClient} from "./request/SetlistFm";
+import {MusicbrainzRequestClient} from "./request/Musicbrainz";
 
 // See: http://knexjs.org/#typescript-support
 // declare module 'knex/types/tables' {
@@ -30,7 +31,7 @@ const client = new Client({
     intents: [Intents.FLAGS.GUILDS]
 });
 
-const SetlistRequestor = new SetlistfmRequestor()
+const SetlistRequestor = new SetlistfmRequestClient()
 
 client.on('ready', () => {
     console.log(`Client is logged in as ${client.user!.tag} and ready!`);
@@ -43,7 +44,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     }
 
     if (interaction.isAutocomplete() && interaction.commandName === 'set-artist') {
-        return new AutocompleteArtists(interaction)
+        return new AutocompleteArtists(interaction, new MusicbrainzRequestClient())
     }
 
     if (!interaction.isCommand()) return;

@@ -1,14 +1,14 @@
 import {Interaction} from "discord.js";
-import {SetlistfmRequestor} from "../setlistfm_requestor";
 import knexClient from "../helpers/knexClient";
+import {SetlistfmRequestClient} from "../request/SetlistFm";
 
 export class SetArtist {
     public interaction: Interaction
-    protected requestor: SetlistfmRequestor
+    protected setlistFmClient: SetlistfmRequestClient
 
-    public constructor(interaction: Interaction, requestor: SetlistfmRequestor) {
+    public constructor(interaction: Interaction, setlistFmRequestClient: SetlistfmRequestClient) {
         this.interaction = interaction
-        this.requestor = requestor;
+        this.setlistFmClient = setlistFmRequestClient;
         this.invoke()
     }
 
@@ -54,7 +54,7 @@ export class SetArtist {
 
         let artistName;
         try {
-            artistName = await this.requestor.fetchArtistName(mbId)
+            artistName = await this.setlistFmClient.fetchArtistName(mbId)
         } catch (err) {
             // todo: handle not found exception better
             return this.interaction.reply({
@@ -92,8 +92,14 @@ export class SetArtist {
             .onConflict('guild_id')
             .merge()
 
+        let message = 'Artist for this server has been set to: ' + artistName
+
+        if (!artistInDb) {
+            message += '\nPlease allow up to 5 minutes for the system to fetch all the artist setlists!'
+        }
+
         return this.interaction.reply({
-            content: 'Artist for this server has been set to: ' + artistName,
+            content: message,
             ephemeral: true
         })
     }

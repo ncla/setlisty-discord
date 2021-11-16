@@ -1,11 +1,14 @@
 import {AutocompleteInteraction} from "discord.js";
 import axios, {AxiosResponse} from "axios";
+import {MusicbrainzRequestClient} from "../request/Musicbrainz";
 
 export class AutocompleteArtists {
     public interaction: AutocompleteInteraction
+    private musicbrainzRequestClient: MusicbrainzRequestClient
 
-    public constructor(interaction: AutocompleteInteraction) {
+    public constructor(interaction: AutocompleteInteraction, musicbrainzRequestClient: MusicbrainzRequestClient) {
         this.interaction = interaction
+        this.musicbrainzRequestClient = musicbrainzRequestClient;
         this.invoke()
     }
 
@@ -24,24 +27,17 @@ export class AutocompleteArtists {
             return await this.interaction.respond([]);
         }
 
-        const requestor = axios.create({
-            timeout: 2500,
-            headers: {
-                'accept': 'application/json',
-            }
-        })
-
         let response: AxiosResponse;
 
         try {
-            response = await requestor.get(`https://musicbrainz.org/ws/2/artist?query=${encodeURIComponent(userQuery)}&limit=5`);
+            response = await this.musicbrainzRequestClient.searchArtists(userQuery)
         } catch (err) {
             return await this.interaction.respond([])
         }
 
         return await this.interaction.respond(response.data.artists.map((value: any) => {
             return {
-                'name': `${value.name} ${value.disambiguation ? ' – ' + value.disambiguation : ''}`,
+                'name': `${value.name}${value.disambiguation ? ' – ' + value.disambiguation : ''}`,
                 'value': value.id
             }
         }) ?? [])
