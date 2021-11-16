@@ -21,6 +21,10 @@ export class AutocompleteSetlists {
             return await this.interaction.respond([]);
         }
 
+        if (userQuery === null || userQuery.length === 0) {
+            return await this.interaction.respond([]);
+        }
+
         const artistDb = await knexClient('discord_guilds')
             .select('artist_id')
             .where({
@@ -32,9 +36,14 @@ export class AutocompleteSetlists {
             return await this.interaction.respond([]);
         }
 
+        const againstWithWildcard = `(${userQuery.split(' ').map(word => word + '*').join(' ')})`
+        const againstNormal = `("${userQuery}")`
+
+        const againstBinding = `${againstWithWildcard} ${againstNormal}`;
+
         const setlists = await knexClient('setlists')
             .select('id', 'searchable_full_name')
-            .whereRaw('MATCH (searchable_full_name) AGAINST (?)', [userQuery])
+            .whereRaw('MATCH (searchable_full_name) AGAINST (? IN BOOLEAN MODE)', [againstBinding])
             .where({
                 artist_id: artistDb.artist_id
             })
