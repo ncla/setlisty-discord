@@ -2,7 +2,10 @@
 set -e
 
 if [ "${1}" = "run_worker" ]; then
-  watch -n 1 node dist/execute_artist_job.js
+  while true; do
+   node dist/execute_artist_job.js
+   sleep 1
+  done
 elif [ "${1}" = "run_bot" ]; then
   node dist/index.js
 elif [ "${1}" = "migrate" ]; then
