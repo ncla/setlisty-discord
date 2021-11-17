@@ -43,11 +43,13 @@ export class AutocompleteSetlists {
 
         const setlists = await knexClient('setlists')
             .select('id', 'searchable_full_name')
-            .whereRaw('MATCH (searchable_full_name) AGAINST (? IN BOOLEAN MODE)', [againstBinding])
+            .select(knexClient.raw('MATCH (searchable_full_name) AGAINST (? IN BOOLEAN MODE) as score', [againstBinding]))
             .where({
                 artist_id: artistDb.artist_id
             })
-            .limit(10)
+            .having('score', '>', 0)
+            .orderBy('score', 'desc')
+            .limit(5)
 
         const transformToChoices = async (setlistDbRecord: any) => {
             const setlistObject = await getFullSetlistData(setlistDbRecord.id);
