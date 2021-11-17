@@ -23,6 +23,10 @@ export class ShowSetlist {
 
         const query = this.interaction.options.getString('query')
 
+        if (!query) {
+            return this.interaction.reply('Missing query parameter')
+        }
+
         const guildId = this.interaction.guildId
 
         const artistDb = await knexClient('discord_guilds')
@@ -40,19 +44,30 @@ export class ShowSetlist {
 
         // todo: validation for empty or trash input
 
-        const setlistDb = await knexClient('setlists')
-            .select('id')
-            .whereRaw('MATCH (searchable_full_name) AGAINST (?)', [query])
-            .where({
-                artist_id: artistDb.artist_id
-            })
-            .first()
+        const idFromAutocomplete = query.startsWith('id:') ? query.replace('id:', '') : null
+
+        let setlistDb;
+
+        if (idFromAutocomplete) {
+            setlistDb = await knexClient('setlists')
+                .where({
+                    id: idFromAutocomplete,
+                    artist_id: artistDb.artist_id
+                })
+                .first()
+        } else {
+            setlistDb = await knexClient('setlists')
+                .select('id')
+                .whereRaw('MATCH (searchable_full_name) AGAINST (?)', [query])
+                .where({
+                    artist_id: artistDb.artist_id
+                })
+                .first()
+        }
 
         if (!setlistDb) {
             return await this.interaction.reply('No setlist was found!')
         }
-
-        console.log(setlistDb)
 
         let setlist = await getFullSetlistData(setlistDb.id)
 

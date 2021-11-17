@@ -56,7 +56,7 @@ export class AutocompleteSetlists {
 
             return {
                 'name': setlistObject.getAutocompleteChoiceTitle(),
-                'value': setlistDbRecord.searchable_full_name
+                'value': `id:${setlistDbRecord.id}`
             }
         };
 
