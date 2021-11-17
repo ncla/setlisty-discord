@@ -49,14 +49,16 @@ export class Setlist implements SetlistInterface {
         }
 
         let text = ''
-        let encore = 0
+        let setNumber = 0
 
         for (const track of this.tracks) {
-            const newline = encore != track.set_number
-            text += `${track.order_number + 1}. ${track.tape ? '🖭' : ''} **${track.name}** `
-                + `${track.note ? ` (*${track.note}*)` : ''}`
-                + `\n${newline ? '\n' : ''}`
-            encore = track.set_number
+            const newline = setNumber != track.set_number
+
+            text +=
+                `${newline ? '\n' : ''}` +
+                `${track.order_number + 1}. ${track.tape ? '🖭' : ''} **${track.name}** `
+                + `${track.note ? ` (*${track.note}*)` : ''}\n`
+            setNumber = track.set_number
         }
 
         return text
