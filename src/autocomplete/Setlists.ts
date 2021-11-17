@@ -1,6 +1,7 @@
 import {AutocompleteInteraction} from "discord.js";
 import knexClient from "../helpers/knexClient";
 import {getFullSetlistData} from "../helpers/setlist";
+import {truncateString} from "../helpers";
 
 export class AutocompleteSetlists {
     public interaction: AutocompleteInteraction
@@ -55,7 +56,7 @@ export class AutocompleteSetlists {
             const setlistObject = await getFullSetlistData(setlistDbRecord.id);
 
             return {
-                'name': setlistObject.getAutocompleteChoiceTitle(),
+                'name': truncateString(setlistObject.getAutocompleteChoiceTitle(), 100),
                 'value': `id:${setlistDbRecord.id}`
             }
         };
