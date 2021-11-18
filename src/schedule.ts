@@ -3,19 +3,19 @@ import Graceful from '@ladjs/graceful';
 import Config from './config';
 import path from "path";
 
-const sleepBeforeStart = Config.environment == "production" ? '30s' : false;
+const startupDelayToAvoidCPUSpike = Config.environment == "production" ? '30s' : false;
 
 const bree = new Bree({
     root: path.join(__dirname, "jobs"),
     jobs: [
         {
             name: 'update_setlists',
-            timeout: sleepBeforeStart,
+            timeout: startupDelayToAvoidCPUSpike,
             interval: '1s'
         },
         {
             name: 'update_events',
-            timeout: sleepBeforeStart,
+            timeout: startupDelayToAvoidCPUSpike,
             interval: '5s'
         },
     ]
