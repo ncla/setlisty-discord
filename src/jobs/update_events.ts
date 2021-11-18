@@ -1,6 +1,6 @@
-import knexClient, {now} from "./helpers/knexClient";
+import knexClient, {now} from "../helpers/knexClient";
 import axios from "axios";
-import {SetlistDbInterface} from "./types/setlist";
+import {SetlistDbInterface} from "../types/setlist";
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 

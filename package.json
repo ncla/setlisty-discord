@@ -6,11 +6,11 @@
   "dependencies": {
     "@discordjs/builders": "^0.8.2",
     "@discordjs/rest": "^0.1.0-canary.0",
+    "@ladjs/graceful": "^1.1.2",
     "@type-config/standard": "^1.1.1",
-    "@types/lodash": "^4.14.165",
-    "@types/node": "^16.11.7",
-    "@types/ws": "^7.2.6",
     "axios": "^0.19.2",
+    "bree": "^7.1.0",
+    "cabin": "^9.0.4",
     "dayjs": "^1.10.7",
     "discord-api-types": "^0.24.0",
     "discord.js": "https://github.com/discordjs/discord.js.git#c0ba2d46d0796c95598673f77f04b180280afb57",
@@ -22,7 +22,6 @@
     "lodash": "^4.17.20",
     "mysql": "^2.18.1",
     "nodemon": "^2.0.15",
-    "pm2": "^4.4.0",
     "typescript": "^4.4.4"
   },
   "devDependencies": {
@@ -30,23 +29,28 @@
     "@babel/preset-env": "^7.14.2",
     "@babel/preset-typescript": "^7.13.0",
     "@types/jest": "^26.0.23",
+    "@types/lodash": "^4.14.177",
+    "@types/node": "^16.11.7",
+    "@types/safe-timers": "^1.1.0",
+    "@types/ws": "^8.2.0",
     "babel-jest": "^26.6.3",
     "chai": "^4.3.4",
     "jest": "^26.6.3",
     "mocha": "^8.4.0",
-    "ts-jest": "^26.5.6",
-    "ts-node": "^10.4.0",
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.15",
+    "ts-jest": "^26.5.6"
   },
   "scripts": {
     "start": "yarn tsc && node dist/index.js",
     "register": "yarn tsc && node dist/deploy-commands.js",
     "scrape": "yarn tsc && node dist/scrape.js",
-    "work": "yarn tsc && yarn run scrape-one",
-    "scrape-one": "node dist/execute_artist_job.js",
+    "schedule": "cd src && ts-node schedule.ts",
 
-    "watch": "./node_modules/nodemon/bin/nodemon.js",
-    "dev": "yarn install && yarn run migrate && yarn run watch",
+    "nodemon": "./node_modules/nodemon/bin/nodemon.js",
+    "watch-compile": "yarn run nodemon -e ts,js,env,json --watch src/ --watch package.json --watch .env --exec yarn tsc",
+    "watch-dist": "yarn run nodemon --watch dist/ --exec",
+    "watch-schedule": "yarn run watch-dist node dist/schedule.js",
+    "watch-bot": "yarn run watch-dist node dist/index.js",
 
     "knex": "./node_modules/knex/bin/cli.js --knexfile knexfile.ts",
     "migrate": "yarn run knex migrate:latest",
@@ -57,8 +61,6 @@
     "attach-bot": "docker exec -it setlist_bot sh",
     "attach-scraper": "docker exec -it setlist_scraper sh",
     "logs-bot": "docker logs -tf setlist_bot",
-    "logs-scraper": "docker logs -tf setlist_scraper",
-
-    "test": "jest"
+    "logs-scraper": "docker logs -tf setlist_scraper"
   }
 }
