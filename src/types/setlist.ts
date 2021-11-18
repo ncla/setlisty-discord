@@ -2,6 +2,8 @@ export interface SetlistDbInterface {
     id: string,
     date: string,
     url: string,
+    event_id: string|null,
+    event_name: string|null,
     venue: string,
     venue_name: string,
     city_name: string,
@@ -29,6 +31,8 @@ export type SetlistInterface = {
     id: string,
     date: string,
     url: string,
+    event_id: string|null,
+    event_name: string|null,
     venue: Venue,
     tracks: Array<Track>
 }
@@ -38,5 +42,7 @@ export interface SetlistOptions {
     date: string,
     url: string,
     tracks: Array<Track>,
-    venue: Venue
+    venue: Venue,
+    event_id: string|null,
+    event_name: string|null,
 }

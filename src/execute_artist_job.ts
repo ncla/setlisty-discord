@@ -1,5 +1,5 @@
 import SetlistUpdater from "./setlist-updater";
-import knexClient from "./helpers/knexClient";
+import knexClient, {now} from "./helpers/knexClient";
 import {SetlistfmRequestClient} from "./request/SetlistFm";
 
 async function getFirstNeverUpdatedArtist() {
@@ -48,7 +48,7 @@ async function updateArtistUpdateJob(jobId: number, status: string, debug?: stri
         .update({
             status: status,
             debug: debug,
-            updated_at: knexClient.raw('NOW()')
+            updated_at: now
         })
 }
 

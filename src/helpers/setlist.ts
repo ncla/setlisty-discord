@@ -23,7 +23,15 @@ export async function getFullSetlistData(setlistId: string) {
         .where({setlist_id: setlistId})
         .orderBy('order_number', 'asc')
 
-    return new Setlist(<SetlistOptions>{ id: setlist.id, date: setlist.date, url: setlist.url, tracks: tracksDb, venue: venueObj })
+    return new Setlist(<SetlistOptions>{
+        id: setlist.id,
+        date: setlist.date,
+        url: setlist.url,
+        tracks: tracksDb,
+        event_id: setlist.event_id,
+        event_name: setlist.event_name,
+        venue: venueObj
+    })
 }
 
 export async function getFullSetlistDataArray(setlistIds: Array<string>) {
@@ -38,6 +46,8 @@ export class Setlist implements SetlistInterface {
     url!: string;
     tracks!: Array<Track>;
     venue!: Venue;
+    event_id!: string;
+    event_name!: string;
 
     public constructor (opts: SetlistOptions) {
         Object.assign(this, opts);
@@ -65,7 +75,7 @@ export class Setlist implements SetlistInterface {
     }
 
     public getFullLocationText (): string {
-        return `${this.venue.name}, ${this.venue.cityname},${this.venue.statename ? ` ${this.venue.statename},` :''} ${this.venue.countryname}`
+        return `${this.event_name ?? this.venue.name}, ${this.venue.cityname},${this.venue.statename ? ` ${this.venue.statename},` :''} ${this.venue.countryname}`
     }
 
     public getDateText (): string {
