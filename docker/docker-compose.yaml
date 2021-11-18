@@ -15,9 +15,18 @@ services:
     env_file:
       - ../.env
 
+  compiler:
+    container_name: setlist_compiler
+    image: node:16-alpine3.14
+    volumes:
+      - ../:/app
+    working_dir: /app
+    command: yarn run watch-compile
+
   bot:
     depends_on: 
       - db
+      - compiler
     healthcheck:
       test: ["CMD", "ps", "aux", "|", "grep", "nodemon"]
       interval: 1s
@@ -26,7 +35,7 @@ services:
     volumes:
       - ../:/app
     working_dir: /app
-    command: yarn run dev
+    command: yarn run watch-bot
     env_file:
       - ../.env
 
@@ -41,4 +50,4 @@ services:
     env_file:
       - ../.env
     working_dir: /app
-    command: sh -c "yarn tsc && watch -n 5 -t yarn run scrape-one"
+    command: yarn run watch-schedule

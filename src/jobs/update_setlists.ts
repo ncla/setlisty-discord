@@ -1,6 +1,6 @@
-import SetlistUpdater from "./setlist-updater";
-import knexClient, {now} from "./helpers/knexClient";
-import {SetlistfmRequestClient} from "./request/SetlistFm";
+import SetlistUpdater from "../setlist-updater";
+import knexClient, {now} from "../helpers/knexClient";
+import {SetlistfmRequestClient} from "../request/SetlistFm";
 
 async function getFirstNeverUpdatedArtist() {
     return await knexClient('artists')

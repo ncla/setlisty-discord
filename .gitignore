@@ -5,3 +5,4 @@ node_modules/
 dist/
 docker/mysql/
 .env
+yarn-error.log
