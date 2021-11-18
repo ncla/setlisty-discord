@@ -1,11 +1,12 @@
 import Bree from 'bree';
 import Graceful from '@ladjs/graceful';
 import Config from './config';
+import path from "path";
 
 const sleepBeforeStart = Config.environment == "production" ? '30s' : false;
 
 const bree = new Bree({
-    root: "/app/dist/jobs",
+    root: path.join(__dirname, "jobs"),
     jobs: [
         {
             name: 'update_setlists',
