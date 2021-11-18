@@ -38,25 +38,23 @@
     "jest": "^26.6.3",
     "mocha": "^8.4.0",
     "nodemon": "^2.0.15",
-    "ts-jest": "^26.5.6"
+    "ts-jest": "^26.5.6",
+    "ts-node": "^10.4.0"
   },
   "scripts": {
     "start": "yarn tsc && node dist/index.js",
     "register": "yarn tsc && node dist/deploy-commands.js",
     "scrape": "yarn tsc && node dist/scrape.js",
     "schedule": "cd src && ts-node schedule.ts",
-
     "nodemon": "./node_modules/nodemon/bin/nodemon.js",
     "watch-compile": "yarn run nodemon -e ts,js,env,json --watch src/ --watch package.json --watch .env --exec yarn tsc",
     "watch-dist": "yarn run nodemon --watch dist/ --exec",
     "watch-schedule": "yarn run watch-dist node dist/schedule.js",
     "watch-bot": "yarn run watch-dist node dist/index.js",
-
     "knex": "./node_modules/knex/bin/cli.js --knexfile knexfile.ts",
     "migrate": "yarn run knex migrate:latest",
     "rollback": "yarn run knex migrate:rollback",
     "remigrate": "yarn run rollback && yarn run migrate",
-
     "start-docker": "cd docker && docker-compose up -d",
     "attach-bot": "docker exec -it setlist_bot sh",
     "attach-scraper": "docker exec -it setlist_scraper sh",
