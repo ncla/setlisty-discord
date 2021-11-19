@@ -37,17 +37,6 @@ jobs:
     runs-on: ubuntu-latest
     # needs: [ build ]
 
-    services:
-      mysql:
-        image: mysql:8.0.23
-        env:
-          MYSQL_DATABASE: setlisty
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_ROOT_PASSWORD: ""
-        ports:
-          - 3306
-        options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30
-
     steps:
       - uses: actions/checkout@v2
 
@@ -56,8 +45,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
+      - name: start MySQL database
+        run: docker run -d -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=setlisty --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30 mysql:8.0.23 mysqld --default-authentication-plugin=mysql_native_password
+
+      - name: wait for MySQL to become healthy
+        run: until [ "`docker inspect -f {{.State.Health.Status}} mysql`" -eq "healthy" ]; do; sleep 0.1; done;
+
       - name: run migrations
-        run: docker run --env-file ./.env.example -e DB_HOST=127.0.0.1 -e DB_PORT=${{ job.services.mysql.ports[3306] }} -e DB_PASSWORD="" --network="host" --rm ghcr.io/ncla/setlisty:pre-release migrate
+        run: docker run --env-file ./.env.example -e DB_HOST=127.0.0.1 -e DB_PASSWORD=root --network="host" --rm ghcr.io/ncla/setlisty:pre-release migrate
 
 #  deploy:
 #    needs: [ build, test ]
