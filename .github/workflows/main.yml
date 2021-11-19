@@ -59,6 +59,15 @@ jobs:
     needs: [ build ]
     steps:
       - uses: actions/checkout@v2
+
+      - name: docker login
+        run: docker login ghcr.io -u $GITHUB_ACTOR -p $GITHUB_TOKEN
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: pull image
+        run: docker pull ghcr.io/ncla/setlisty:pre-release
+
       - run: docker run --env-file ./.env.example --rm ghcr.io/ncla/setlisty:pre-release test
 
   deploy:
