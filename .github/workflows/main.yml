@@ -49,7 +49,7 @@ jobs:
         run: docker run -d -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=setlisty --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30 mysql:8.0.23 mysqld --default-authentication-plugin=mysql_native_password
 
       - name: wait for MySQL to become healthy
-        run: until [ "`docker inspect -f {{.State.Health.Status}} mysql`" -eq "healthy" ]; do; sleep 0.1; done;
+        run: until [ "`docker inspect -f {{.State.Health.Status}} mysql`" = "healthy" ]; do; sleep 0.1; done;
 
       - name: run migrations
         run: docker run --env-file ./.env.example -e DB_HOST=127.0.0.1 -e DB_PASSWORD=root --network="host" --rm ghcr.io/ncla/setlisty:pre-release migrate
