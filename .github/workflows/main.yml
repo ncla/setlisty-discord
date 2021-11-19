@@ -42,7 +42,8 @@ jobs:
         image: mysql:8.0.23
         env:
           MYSQL_DATABASE: setlisty
-          MYSQL_ROOT_PASSWORD: changeme123rootPLS
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_ROOT_PASSWORD: ""
         ports:
           - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=1s --health-timeout=1s --health-retries=30
@@ -56,7 +57,7 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: run migrations
-        run: docker run --env-file ./.env.example -e DB_HOST=127.0.0.1 -e DB_PORT=${{ job.services.mysql.ports[3306] }} --network="host" --rm ghcr.io/ncla/setlisty:pre-release migrate
+        run: docker run --env-file ./.env.example -e DB_HOST=127.0.0.1 -e DB_PORT=${{ job.services.mysql.ports[3306] }} DB_PASSWORD="" --network="host" --rm ghcr.io/ncla/setlisty:pre-release migrate
 
 #  deploy:
 #    needs: [ build, test ]
