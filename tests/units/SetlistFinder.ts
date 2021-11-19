@@ -1,13 +1,13 @@
-import {SetlistNotFoundException, ArtistDoesntExistException, SetlistFinder} from "../../src/services/SetlistFinder";
+import {SetlistNotFoundException, ArtistNotFoundException, SetlistFinder} from "../../src/services/SetlistFinder";
 import {ArtistRepository} from "../../src/repository/ArtistRepository";
 import {SetlistRepository} from "../../src/repository/SetlistRepository";
 import {SetlistInterface} from "../../src/types/setlist";
 
 describe('SetlistFinder', function () {
     // unit test :-)
-    const makeArtistRepo = (returnValue: number | undefined = undefined) => {
+    const makeArtistRepo = (returnValue: string | undefined = undefined) => {
         return <ArtistRepository>{
-            async getArtistIdForGuildId(guildId: number): Promise<number | undefined> {
+            async getArtistIdForGuildId(guildId: string): Promise<string | undefined> {
                 return Promise.resolve(returnValue)
             }
         }
@@ -25,7 +25,7 @@ describe('SetlistFinder', function () {
     }
 
     it('throws when no artist is found', async () => {
-        const guildId = 1337;
+        const guildId = '1337';
 
         const mockArtistRepo = makeArtistRepo(undefined)
         const spy = jest.spyOn(mockArtistRepo, 'getArtistIdForGuildId')
@@ -34,7 +34,7 @@ describe('SetlistFinder', function () {
 
         let promise = command.invoke(guildId, "doesntmatter")
 
-        await expect(promise).rejects.toThrow(ArtistDoesntExistException)
+        await expect(promise).rejects.toThrow(ArtistNotFoundException)
         expect(spy).toHaveBeenCalledWith(guildId)
     })
 
@@ -43,12 +43,12 @@ describe('SetlistFinder', function () {
             const passedSetlistId = "123";
 
             const mockSetlistRepo = makeSetlistRepo(undefined);
-            const mockArtistRepo = makeArtistRepo(555);
+            const mockArtistRepo = makeArtistRepo('555');
 
             const spy = jest.spyOn(mockSetlistRepo, 'getSetlistById');
 
             let command = new SetlistFinder(mockArtistRepo, mockSetlistRepo);
-            let promise = command.invoke(111, `id:${passedSetlistId}`);
+            let promise = command.invoke('111', `id:${passedSetlistId}`);
 
             await expect(promise).rejects.toThrow(SetlistNotFoundException);
 
@@ -60,12 +60,12 @@ describe('SetlistFinder', function () {
             const expectedSetlist = <SetlistInterface>{id: "123"};
 
             const mockSetlistRepo = makeSetlistRepo(expectedSetlist);
-            const mockArtistRepo = makeArtistRepo(555);
+            const mockArtistRepo = makeArtistRepo('555');
 
             const spy = jest.spyOn(mockSetlistRepo, 'getSetlistById');
 
             let command = new SetlistFinder(mockArtistRepo, mockSetlistRepo);
-            let promise = command.invoke(111, `id:${passedSetlistId}`);
+            let promise = command.invoke('111', `id:${passedSetlistId}`);
 
             await expect(promise).resolves.toEqual(expectedSetlist);
 
@@ -78,15 +78,15 @@ describe('SetlistFinder', function () {
             const searchQuery = "i like ducks";
 
             const mockSetlistRepo = makeSetlistRepo(undefined);
-            const mockArtistRepo = makeArtistRepo(555);
+            const mockArtistRepo = makeArtistRepo('555');
             const spy = jest.spyOn(mockSetlistRepo, 'getSetlistBySearchQuery');
 
             let command = new SetlistFinder(mockArtistRepo, mockSetlistRepo);
-            let promise = command.invoke(111, searchQuery);
+            let promise = command.invoke('111', searchQuery);
 
             await expect(promise).rejects.toThrow(SetlistNotFoundException);
 
-            expect(spy).toHaveBeenCalledWith(searchQuery, 555);
+            expect(spy).toHaveBeenCalledWith(searchQuery, '555');
         })
 
         it('returns correct setlist when it was found', async () => {
@@ -94,10 +94,10 @@ describe('SetlistFinder', function () {
             const expectedSetlist = <SetlistInterface>{id: "123"};
 
             const mockSetlistRepo = makeSetlistRepo(expectedSetlist);
-            const mockArtistRepo = makeArtistRepo(555);
+            const mockArtistRepo = makeArtistRepo('555');
 
             let command = new SetlistFinder(mockArtistRepo, mockSetlistRepo);
-            let promise = command.invoke(111, searchQuery);
+            let promise = command.invoke('111', searchQuery);
 
             await expect(promise).resolves.toEqual(expectedSetlist);
         })

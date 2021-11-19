@@ -1,5 +1,6 @@
 import {SetlistInterface} from "../types/setlist";
-import {getFullSetlistData} from "../helpers/setlist";
+import {getFullSetlistData, Setlist} from "../helpers/setlist";
+import knexClient from "../helpers/knexClient";
 
 export class SetlistRepository {
     private knexClient;
@@ -8,7 +9,7 @@ export class SetlistRepository {
         this.knexClient = knexClient;
     }
 
-    async getSetlistById(id: string): Promise<SetlistInterface | undefined> {
+    async getSetlistById(id: string): Promise<Setlist | undefined> {
         try {
             return getFullSetlistData(id)
         } catch (e) {
@@ -16,13 +17,20 @@ export class SetlistRepository {
         }
     }
 
-    async getSetlistBySearchQuery(query: string, artistId: number): Promise<SetlistInterface | undefined> {
+    async getSetlistBySearchQuery(query: string, artistId: number): Promise<Setlist | undefined> {
+        const againstWithWildcard = `(${query.split(' ').map(word => word + '*').join(' ')})`
+        const againstNormal = `("${query}")`
+
+        const againstBinding = `${againstWithWildcard} ${againstNormal}`;
+
         const setlist = await this.knexClient('setlists')
             .select('id')
-            .whereRaw('MATCH (searchable_full_name) AGAINST (?)', [query])
+            .select(knexClient.raw('MATCH (searchable_full_name) AGAINST (? IN BOOLEAN MODE) as score', [againstBinding]))
             .where({
                 artist_id: artistId
             })
+            .having('score', '>', 0)
+            .orderBy('score', 'desc')
             .first()
 
         if (!setlist) return undefined

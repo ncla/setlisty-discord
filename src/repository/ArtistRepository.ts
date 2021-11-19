@@ -5,14 +5,14 @@ export class ArtistRepository {
         this.knexClient = knexClient;
     }
 
-    async getArtistIdForGuildId(guildId: number): Promise<number | undefined> {
-        const artist = this.knexClient('discord_guilds')
+    async getArtistIdForGuildId(guildId: string): Promise<number | undefined> {
+        const artist = await this.knexClient('discord_guilds')
             .select('artist_id')
             .where({
                 guild_id: guildId
             })
             .first()
 
-        return artist?.id
+        return artist?.artist_id
     }
 }

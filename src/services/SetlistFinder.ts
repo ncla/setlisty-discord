@@ -1,6 +1,6 @@
 import {ArtistRepository} from "../repository/ArtistRepository";
 import {SetlistRepository} from "../repository/SetlistRepository";
-import {SetlistInterface} from "../types/setlist";
+import {Setlist} from "../helpers/setlist";
 
 export class SetlistFinder {
     private artistRepository: ArtistRepository;
@@ -11,32 +11,12 @@ export class SetlistFinder {
         this.setlistRepository = setlistRepository;
     }
 
-    public async invoke(guildId: number, query: string): Promise<SetlistInterface> {
-        // if (!this.interaction.isCommand()) return;
-        //
-        // if (!this.interaction.inGuild()) {
-        //     return this.interaction.reply({
-        //         content: 'Sorry, this bot is not available through DMs',
-        //         ephemeral: true
-        //     })
-        // }
-        //
-        // const query = this.interaction.options.getString('query')
-        //
-        // if (!query) {
-        //     return this.interaction.reply('Missing query parameter')
-        // }
-        //
-        // const guildId = this.interaction.guildId
-
+    public async invoke(guildId: string, query: string): Promise<Setlist> {
         const artistId: number | undefined = await this.artistRepository.getArtistIdForGuildId(guildId);
 
         if (!artistId) {
-            throw new ArtistDoesntExistException();
-            //return this.interaction.reply('No artist ID set in this server')
+            throw new ArtistNotFoundException();
         }
-
-        // todo: validation for empty or trash input
 
         const idFromAutocomplete = query.startsWith('id:') ? query.replace('id:', '') : null
 
@@ -50,28 +30,13 @@ export class SetlistFinder {
 
         if (!setlist) {
             throw new SetlistNotFoundException();
-            // return await this.interaction.reply('No setlist was found!')
         }
 
         return setlist;
-
-        //let setlist = await getFullSetlistData(setlistDb.id)
-
-        // const embed = new MessageEmbed()
-        //     // Set the title of the field
-        //     .setTitle(setlist.getLocationAndDateText())
-        //     .setURL(setlist.url)
-        //     .setColor(0xff0000)
-        //     .setDescription(setlist.getTrackListText());
-        //
-        // throw new Error();
-        // // await this.interaction.reply({
-        // //     embeds: [embed]
-        // // });
     }
 }
 
-export class ArtistDoesntExistException extends Error {
+export class ArtistNotFoundException extends Error {
     constructor() {
         super();
     }
