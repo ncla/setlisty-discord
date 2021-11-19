@@ -1,27 +1,9 @@
-import Bree from 'bree';
-import Graceful from '@ladjs/graceful';
-import Config from './config';
-import path from "path";
+import {Job} from "./scheduler/job";
+import {start as runScheduler} from "./scheduler/scheduler";
 
-const startupDelayToAvoidCPUSpike = Config.environment == "production" ? '30s' : false;
+const jobs:Array<Job> = [
+    new Job('update_setlists', 1),
+    new Job('update_events', 5)
+]
 
-const bree = new Bree({
-    root: path.join(__dirname, "jobs"),
-    jobs: [
-        {
-            name: 'update_setlists',
-            timeout: startupDelayToAvoidCPUSpike,
-            interval: '1s'
-        },
-        {
-            name: 'update_events',
-            timeout: startupDelayToAvoidCPUSpike,
-            interval: '5s'
-        },
-    ]
-});
-
-const graceful = new Graceful({ brees: [bree] });
-graceful.listen();
-
-bree.start();
+runScheduler(jobs);
