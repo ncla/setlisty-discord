@@ -1,7 +1,6 @@
 import {AutocompleteArtists} from "./autocomplete/Artists";
 
 const { Client, Intents } = require('discord.js');
-import {ShowSetlist} from './commands/ShowSetlist'
 import {Interaction} from "discord.js";
 import Config from "./config";
 import {AutocompleteSetlists} from "./autocomplete/Setlists";
@@ -39,23 +38,23 @@ client.on('ready', () => {
 });
 
 client.on('interactionCreate', async (interaction: Interaction) => {
-    if (interaction.isAutocomplete() && interaction.commandName === 'show') {
-        return new AutocompleteSetlists(interaction)
-    }
-
-    if (interaction.isAutocomplete() && interaction.commandName === 'set-artist') {
-        return new AutocompleteArtists(interaction, new MusicbrainzRequestClient())
-    }
-
-    if (!interaction.isCommand()) return;
-
-    if (interaction.commandName === 'show') {
-        return new ShowSetlist(interaction)
-    }
-
-    if (interaction.commandName === 'set-artist') {
-        return new SetArtist(interaction, SetlistRequestor)
-    }
+    // if (interaction.isAutocomplete() && interaction.commandName === 'show') {
+    //     return new AutocompleteSetlists(interaction)
+    // }
+    //
+    // if (interaction.isAutocomplete() && interaction.commandName === 'set-artist') {
+    //     return new AutocompleteArtists(interaction, new MusicbrainzRequestClient())
+    // }
+    //
+    // if (!interaction.isCommand()) return;
+    //
+    // if (interaction.commandName === 'show') {
+    //     return new ShowSetlist(interaction)
+    // }
+    //
+    // if (interaction.commandName === 'set-artist') {
+    //     return new SetArtist(interaction, SetlistRequestor)
+    // }
 });
 
 client.login(Config.discord.token)
