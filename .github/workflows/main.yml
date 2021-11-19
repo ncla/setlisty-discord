@@ -57,7 +57,7 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: run migrations
-        run: docker run --env-file ./.env.example -e DB_HOST=127.0.0.1 -e DB_PORT=${{ job.services.mysql.ports[3306] }} DB_PASSWORD="" --network="host" --rm ghcr.io/ncla/setlisty:pre-release migrate
+        run: docker run --env-file ./.env.example -e DB_HOST=127.0.0.1 -e DB_PORT=${{ job.services.mysql.ports[3306] }} -e DB_PASSWORD="" --network="host" --rm ghcr.io/ncla/setlisty:pre-release migrate
 
 #  deploy:
 #    needs: [ build, test ]
