@@ -54,8 +54,15 @@ jobs:
       - name: run migrations
         run: docker run --env-file ./.env.example -e DB_HOST=127.0.0.1 -e DB_PASSWORD=root --network="host" --rm ghcr.io/ncla/setlisty:pre-release migrate
 
+  tests:
+    runs-on: ubuntu-latest
+    needs: [ build ]
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker run --env-file ./.env.example --rm ghcr.io/ncla/setlisty:pre-release test
+
   deploy:
-    needs: [ build, test_migrations ]
+    needs: [ build, test_migrations, tests ]
     runs-on: ubuntu-latest
     steps:
       - name: docker login
