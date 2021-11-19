@@ -8,8 +8,10 @@ export function start(jobs: Array<Job>) {
     }
 }
 
-function sleep(seconds: number) {
-    execSync(`sleep ${seconds}`)
+export function sleep(seconds: number) {
+    if (seconds) {
+        execSync(`sleep ${seconds}`)
+    }
 }
 
 function executeAllJobs(jobs: Array<any>) {
