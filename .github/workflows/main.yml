@@ -46,13 +46,23 @@ jobs:
           mysql database: 'setlisty'
           mysql root password: 'changeme123rootPLS'
 
+      - name: docker login
+        run: docker login ghcr.io -u $GITHUB_ACTOR -p $GITHUB_TOKEN
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
       - name: run migrations
-        run: docker run --env-file ./.env.example --rm ghcr.io/ncla/setlisty:pre-release migrate
+        run: docker run --env-file ./.env.example -e DB_HOST=127.0.0.1 --rm ghcr.io/ncla/setlisty:pre-release migrate
 
   deploy:
     needs: [ build, test ]
     runs-on: ubuntu-latest
     steps:
+      - name: docker login
+        run: docker login ghcr.io -u $GITHUB_ACTOR -p $GITHUB_TOKEN
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
       - name: tag latest image
         run: docker tag ghcr.io/ncla/setlisty:pre-release ghcr.io/ncla/setlisty:latest
 
