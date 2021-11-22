@@ -11,6 +11,7 @@ import {ArtistNotFoundException, SetlistFinder, SetlistNotFoundException} from "
 import knexClient from "./helpers/knexClient";
 import {ArtistRepository} from "./repository/ArtistRepository";
 import {SetlistRepository} from "./repository/SetlistRepository";
+import {InteractionGuardException, ShowSetlistInteraction} from "./interactions/ShowSetlistInteraction";
 
 // See: http://knexjs.org/#typescript-support
 // declare module 'knex/types/tables' {
@@ -36,71 +37,32 @@ const client = new Client({
 
 const SetlistRequestor = new SetlistfmRequestClient()
 
+const setlistFinder = new SetlistFinder(
+    new ArtistRepository(knexClient),
+    new SetlistRepository(knexClient)
+)
+
 client.on('ready', () => {
     console.log(`Client is logged in as ${client.user!.tag} and ready!`);
     client.user!.setActivity('/show to start', { type: 'LISTENING' })
 });
 
 client.on('interactionCreate', async (interaction: Interaction) => {
-    // if (interaction.isAutocomplete() && interaction.commandName === 'show') {
-    //     return new AutocompleteSetlists(interaction)
-    // }
-    //
-    // if (interaction.isAutocomplete() && interaction.commandName === 'set-artist') {
-    //     return new AutocompleteArtists(interaction, new MusicbrainzRequestClient())
-    // }
-    //
     if (!interaction.isCommand()) return;
 
+    const showSetlistInteraction = new ShowSetlistInteraction(interaction, setlistFinder)
+
     if (interaction.commandName === 'show') {
-        if (!interaction.inGuild()) {
-            return interaction.reply({
-                content: 'Sorry, this bot is not available through DMs',
-                ephemeral: true
-            })
-        }
-
-        const query = interaction.options.getString('query')
-
-        if (!query) {
-            return interaction.reply('Missing query parameter')
-        }
-
-        const setlistFinder = new SetlistFinder(
-            new ArtistRepository(knexClient),
-            new SetlistRepository(knexClient)
-        )
-
-
-        let setlist;
-
         try {
-            setlist = await setlistFinder.invoke(interaction.guildId, query)
+            await showSetlistInteraction.invoke()
         } catch (err) {
-            if (err instanceof ArtistNotFoundException) {
-                return interaction.reply('No artist ID set in this server')
-            } else if (err instanceof SetlistNotFoundException) {
-                return await interaction.reply('No setlist was found!')
-            } else {
-                throw err
+            if (err instanceof InteractionGuardException) {
+                return await interaction.reply(err.options)
             }
+
+            return await interaction.reply('Encountered unexpected exception')
         }
-
-        const embed = new MessageEmbed()
-            // Set the title of the field
-            .setTitle(setlist.getLocationAndDateText())
-            .setURL(setlist.url)
-            .setColor(0xff0000)
-            .setDescription(setlist.getTrackListText());
-
-        return await interaction.reply({
-            embeds: [embed]
-        });
     }
-    //
-    // if (interaction.commandName === 'set-artist') {
-    //     return new SetArtist(interaction, SetlistRequestor)
-    // }
 });
 
 client.login(Config.discord.token)
