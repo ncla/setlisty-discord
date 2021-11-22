@@ -1,17 +1,48 @@
-import {SetlistInterface} from "../types/setlist";
-import {getFullSetlistData, Setlist} from "../helpers/setlist";
-import knexClient from "../helpers/knexClient";
+import {Setlist} from "../helpers/setlist";
+import {SetlistDbInterface, SetlistOptions, Track, Venue} from "../types/setlist";
+import {Knex} from "knex";
 
 export class SetlistRepository {
     private knexClient;
 
-    constructor(knexClient: any) {
+    constructor(knexClient: Knex) {
         this.knexClient = knexClient;
+    }
+
+    async getFullSetlistData(setlistId: string): Promise<Setlist> {
+        let setlist = await this.knexClient<SetlistDbInterface>('setlists').where({id: setlistId}).first()
+
+        if (!setlist) {
+            throw Error('Setlist not found')
+        }
+
+        let venue = JSON.parse(setlist.venue)
+
+        let venueObj = <Venue>{
+            name: venue.name,
+            cityname: venue.city.name,
+            statename: venue.city.state,
+            countryname: venue.city.country.name
+        }
+
+        let tracksDb = await this.knexClient<Track>('setlist_tracks')
+            .where({setlist_id: setlistId})
+            .orderBy('order_number', 'asc')
+
+        return new Setlist(<SetlistOptions>{
+            id: setlist.id,
+            date: setlist.date,
+            url: setlist.url,
+            tracks: tracksDb,
+            event_id: setlist.event_id,
+            event_name: setlist.event_name,
+            venue: venueObj
+        })
     }
 
     async getSetlistById(id: string): Promise<Setlist | undefined> {
         try {
-            return getFullSetlistData(id)
+            return this.getFullSetlistData(id)
         } catch (e) {
             return undefined
         }
@@ -25,7 +56,7 @@ export class SetlistRepository {
 
         const setlist = await this.knexClient('setlists')
             .select('id')
-            .select(knexClient.raw('MATCH (searchable_full_name) AGAINST (? IN BOOLEAN MODE) as score', [againstBinding]))
+            .select(this.knexClient.raw('MATCH (searchable_full_name) AGAINST (? IN BOOLEAN MODE) as score', [againstBinding]))
             .where({
                 artist_id: artistId
             })
@@ -35,6 +66,6 @@ export class SetlistRepository {
 
         if (!setlist) return undefined
 
-        return getFullSetlistData(setlist.id)
+        return this.getFullSetlistData(setlist.id)
     }
 }
