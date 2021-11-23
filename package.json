@@ -19,6 +19,7 @@
     "lodash": "^4.17.20",
     "mysql": "^2.18.1",
     "nodemon": "^2.0.15",
+    "ts-mocha": "^8.0.0",
     "typescript": "^4.4.4"
   },
   "devDependencies": {
@@ -55,7 +56,7 @@
     "attach-scraper": "docker exec -it setlist_scraper sh",
     "logs-bot": "docker logs -tf setlist_bot",
     "logs-scraper": "docker logs -tf setlist_scraper",
-    "test": "yarn mocha -r ts-node/register tests/**/*.ts",
+    "test": "yarn ts-mocha tests/**/*.ts",
     "tests": "yarn test"
   }
 }
