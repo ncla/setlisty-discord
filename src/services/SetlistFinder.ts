@@ -1,8 +1,12 @@
 import {ArtistRepository} from "../repository/ArtistRepository";
 import {SetlistRepository} from "../repository/SetlistRepository";
 import {Setlist} from "../helpers/setlist";
+import TypedException from "../helpers/TypedException";
 
-export class SetlistFinder {
+export default class SetlistFinder {
+    static ArtistNotFoundException = class extends TypedException {}
+    static SetlistNotFoundException = class extends TypedException {}
+
     private artistRepository: ArtistRepository;
     private setlistRepository: SetlistRepository;
 
@@ -11,11 +15,15 @@ export class SetlistFinder {
         this.setlistRepository = setlistRepository;
     }
 
+    /**
+     * @throws ArtistNotFoundException
+     * @throws SetlistNotFoundException
+     */
     public async invoke(guildId: string, query: string): Promise<Setlist> {
         const artistId: number | undefined = await this.artistRepository.getArtistIdForGuildId(guildId);
 
         if (!artistId) {
-            throw new ArtistNotFoundException();
+            throw new SetlistFinder.ArtistNotFoundException();
         }
 
         const idFromAutocomplete = query.startsWith('id:') ? query.replace('id:', '') : null
@@ -29,21 +37,9 @@ export class SetlistFinder {
         }
 
         if (!setlist) {
-            throw new SetlistNotFoundException();
+            throw new SetlistFinder.SetlistNotFoundException();
         }
 
         return setlist;
-    }
-}
-
-export class ArtistNotFoundException extends Error {
-    constructor() {
-        super();
-    }
-}
-
-export class SetlistNotFoundException extends Error {
-    constructor() {
-        super();
     }
 }

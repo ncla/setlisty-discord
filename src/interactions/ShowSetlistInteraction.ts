@@ -1,8 +1,5 @@
 import {CommandInteraction, InteractionReplyOptions, MessageEmbed} from "discord.js";
-import {ArtistNotFoundException, SetlistFinder, SetlistNotFoundException} from "../services/SetlistFinder";
-import {ArtistRepository} from "../repository/ArtistRepository";
-import knexClient from "../helpers/knexClient";
-import {SetlistRepository} from "../repository/SetlistRepository";
+import SetlistFinder from "../services/SetlistFinder";
 import {Setlist} from "../helpers/setlist";
 
 async function onlyAvailableThroughGuildsConcern(interaction: CommandInteraction): Promise<InteractionReplyOptions | boolean> {
@@ -71,9 +68,9 @@ export class ShowSetlistInteraction {
         try {
             setlist = await this.setlistFinder.invoke(this.interaction.guildId ?? '', query)
         } catch (err) {
-            if (err instanceof ArtistNotFoundException) {
+            if (err instanceof SetlistFinder.ArtistNotFoundException) {
                 return await this.interaction.reply('No artist ID set in this server')
-            } else if (err instanceof SetlistNotFoundException) {
+            } else if (err instanceof SetlistFinder.SetlistNotFoundException) {
                 return await this.interaction.reply('No setlist was found!')
             } else {
                 throw err

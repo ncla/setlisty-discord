@@ -1,13 +1,7 @@
-import {AutocompleteArtists} from "./autocomplete/Artists";
-
-const { Client, Intents } = require('discord.js');
-import {Interaction, MessageEmbed} from "discord.js";
+const {Client, Intents} = require('discord.js');
+import {Interaction} from "discord.js";
 import Config from "./config";
-import {AutocompleteSetlists} from "./autocomplete/Setlists";
-import {SetArtist} from "./commands/SetArtist";
-import {SetlistfmRequestClient} from "./request/SetlistFm";
-import {MusicbrainzRequestClient} from "./request/Musicbrainz";
-import {ArtistNotFoundException, SetlistFinder, SetlistNotFoundException} from "./services/SetlistFinder";
+import SetlistFinder from "./services/SetlistFinder";
 import knexClient from "./helpers/knexClient";
 import {ArtistRepository} from "./repository/ArtistRepository";
 import {SetlistRepository} from "./repository/SetlistRepository";
@@ -35,7 +29,7 @@ const client = new Client({
     intents: [Intents.FLAGS.GUILDS]
 });
 
-const SetlistRequestor = new SetlistfmRequestClient()
+// const SetlistRequestor = new SetlistfmRequestClient()
 
 const setlistFinder = new SetlistFinder(
     new ArtistRepository(knexClient),
@@ -44,7 +38,7 @@ const setlistFinder = new SetlistFinder(
 
 client.on('ready', () => {
     console.log(`Client is logged in as ${client.user!.tag} and ready!`);
-    client.user!.setActivity('/show to start', { type: 'LISTENING' })
+    client.user!.setActivity('/show to start', {type: 'LISTENING'})
 });
 
 client.on('interactionCreate', async (interaction: Interaction) => {

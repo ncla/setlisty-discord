@@ -1,5 +1,5 @@
 import {InteractionGuardException, ShowSetlistInteraction} from "../../src/interactions/ShowSetlistInteraction";
-import {SetlistFinder} from "../../src/services/SetlistFinder";
+import SetlistFinder from "../../src/services/SetlistFinder";
 import sinon from "sinon";
 import {ArtistRepository} from "../../src/repository/ArtistRepository";
 import {SetlistRepository} from "../../src/repository/SetlistRepository";

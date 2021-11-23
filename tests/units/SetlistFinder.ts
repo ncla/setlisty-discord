@@ -1,4 +1,4 @@
-import {SetlistNotFoundException, ArtistNotFoundException, SetlistFinder} from "../../src/services/SetlistFinder";
+import SetlistFinder from "../../src/services/SetlistFinder";
 import {ArtistRepository} from "../../src/repository/ArtistRepository";
 import {SetlistRepository} from "../../src/repository/SetlistRepository";
 import {Setlist} from "../../dist/helpers/setlist";
@@ -21,9 +21,7 @@ describe('SetlistFinder', function () {
 
         let promise = command.invoke(guildId, "doesntmatter")
 
-        // TODO: this assertion passes when a different exception is thrown
-        // TODO: dump all angry thoughts about typescript in discord.
-        expect(promise).to.eventually.be.rejectedWith(ArtistNotFoundException)
+        await expect(promise).to.eventually.be.rejectedWith(SetlistFinder.ArtistNotFoundException)
         expect(mockArtistRepo.getArtistIdForGuildId.calledOnce).to.be.true
     })
 
@@ -40,7 +38,7 @@ describe('SetlistFinder', function () {
             let command = new SetlistFinder(mockArtistRepo, mockSetlistRepo)
             let promise = command.invoke('111', `id:${passedSetlistId}`)
 
-            await expect(promise).to.eventually.be.rejectedWith(SetlistNotFoundException)
+            await expect(promise).to.eventually.be.rejectedWith(SetlistFinder.SetlistNotFoundException)
 
             sinon.assert.calledOnceWithExactly(mockSetlistRepo.getSetlistById, passedSetlistId)
         })
@@ -77,7 +75,7 @@ describe('SetlistFinder', function () {
             let command = new SetlistFinder(mockArtistRepo, mockSetlistRepo);
             let promise = command.invoke('111', searchQuery);
 
-            await expect(promise).to.be.rejectedWith(SetlistNotFoundException);
+            await expect(promise).to.be.rejectedWith(SetlistFinder.SetlistNotFoundException);
             sinon.assert.calledOnceWithExactly(mockSetlistRepo.getSetlistBySearchQuery, searchQuery, 555);
         })
 
