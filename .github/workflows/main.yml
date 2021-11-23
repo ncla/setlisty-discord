@@ -86,14 +86,14 @@ jobs:
       - name: tag latest image
         run: docker tag ghcr.io/ncla/setlisty:$GITHUB_REF_NAME ghcr.io/ncla/setlisty:latest
 
-      - name: push image
-        run: docker push ghcr.io/ncla/setlisty:latest
-
-      - name: execute update command on server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          port: ${{ secrets.PORT }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          script: cd /opt/setlisty && sh update.sh
+#      - name: push image
+#        run: docker push ghcr.io/ncla/setlisty:latest
+#
+#      - name: execute update command on server
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ secrets.HOST }}
+#          port: ${{ secrets.PORT }}
+#          username: ${{ secrets.USERNAME }}
+#          key: ${{ secrets.KEY }}
+#          script: cd /opt/setlisty && sh update.sh
