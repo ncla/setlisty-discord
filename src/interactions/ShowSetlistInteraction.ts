@@ -1,28 +1,29 @@
 import {CommandInteraction, InteractionReplyOptions, MessageEmbed} from "discord.js";
 import SetlistFinder from "../services/SetlistFinder";
 import {Setlist} from "../helpers/setlist";
+import TypedException from "../helpers/TypedException";
 
 async function onlyAvailableThroughGuildsConcern(interaction: CommandInteraction): Promise<InteractionReplyOptions | boolean> {
-    // console.log(6, interaction.guildId)
     if (interaction.inGuild() === false) {
-        // console.log(7)
-        return {
+        const options = <InteractionReplyOptions>{
             content: 'Sorry, this bot is not available through DMs',
             ephemeral: true
         }
+
+        throw new InteractionGuardException(
+            options.content ?? '',
+            options
+        )
     }
 
     return true
 }
 
-export class InteractionGuardException extends Error {
+export class InteractionGuardException extends TypedException {
     public options: InteractionReplyOptions;
 
     constructor(msg: string, options: InteractionReplyOptions) {
         super(msg);
-
-        // https://stackoverflow.com/questions/41102060/typescript-extending-error-class/
-        Object.setPrototypeOf(this, InteractionGuardException.prototype);
 
         this.options = options
     }
@@ -43,18 +44,11 @@ export class ShowSetlistInteraction {
 
     protected async runInteractionGuards() {
         for (const guard of this.interactionGuards) {
-            const interactionReplyOptions = await guard(this.interaction)
-
-            // todo: how to check type if InteractionReplyOptions
-            if (interactionReplyOptions !== true) {
-                // console.log(4, interactionReplyOptions, interactionReplyOptions.content)
-                throw new InteractionGuardException(interactionReplyOptions.content, interactionReplyOptions)
-            }
+            await guard(this.interaction)
         }
     }
 
     public async invoke() {
-        // console.log(this.interaction)
         await this.runInteractionGuards()
 
         const query = this.interaction.options.getString('query')
@@ -92,11 +86,3 @@ export class ShowSetlistInteraction {
         }
     }
 }
-
-// export async function anOptionIsRequired(interaction: CommandInteraction) {
-//     const query = this.interaction.options.getString('query')
-//
-//     if (!query) {
-//         return this.interaction.reply('Missing query parameter')
-//     }
-// }
