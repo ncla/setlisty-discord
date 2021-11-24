@@ -20,26 +20,41 @@ export default class SetlistFinder {
      * @throws SetlistNotFoundException
      */
     public async invoke(guildId: string, query: string): Promise<Setlist> {
-        const artistId: number | undefined = await this.artistRepository.getArtistIdForGuildId(guildId);
+        const artistId = await this.findArtistIdForGuild(guildId)
+        return this.findSetlist(query, artistId)
+    }
 
-        if (!artistId) {
-            throw new SetlistFinder.ArtistNotFoundException();
-        }
-
-        const idFromAutocomplete = query.startsWith('id:') ? query.replace('id:', '') : null
-
-        let setlist;
-
-        if (idFromAutocomplete) {
-            setlist = await this.setlistRepository.getSetlistById(idFromAutocomplete);
-        } else {
-            setlist = await this.setlistRepository.getSetlistBySearchQuery(query, artistId);
-        }
+    /**
+     * @throws SetlistNotFoundException
+     */
+    private async findSetlist(query: string, artistId: number): Promise<Setlist> {
+        let setlist = await this.getSetlistByAutocompleteQuery(query)
+            ?? await this.setlistRepository.getSetlistBySearchQuery(query, artistId)
 
         if (!setlist) {
-            throw new SetlistFinder.SetlistNotFoundException();
+            throw new SetlistFinder.SetlistNotFoundException()
         }
 
-        return setlist;
+        return setlist
+    }
+
+    private async getSetlistByAutocompleteQuery(query: string): Promise<Setlist | undefined> {
+        if (query.startsWith('id:')) {
+            const id = query.replace('id:', '')
+            return this.setlistRepository.getSetlistById(id)
+        }
+    }
+
+    /**
+     * @throws ArtistNotFoundException
+     */
+    private async findArtistIdForGuild(guildId: string): Promise<number> {
+        const artistId = await this.artistRepository.getArtistIdForGuildId(guildId)
+
+        if (!artistId) {
+            throw new SetlistFinder.ArtistNotFoundException()
+        }
+
+        return artistId
     }
 }

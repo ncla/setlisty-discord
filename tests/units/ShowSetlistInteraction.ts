@@ -1,7 +1,7 @@
 import {InteractionGuardException, ShowSetlistInteraction} from "../../src/interactions/ShowSetlistInteraction";
 import SetlistFinder from "../../src/services/SetlistFinder";
 import sinon, {SinonStubbedInstance} from "sinon";
-import {CommandInteraction, CommandInteractionOptionResolver, InteractionReplyOptions} from "discord.js";
+import {CommandInteraction, CommandInteractionOptionResolver} from "discord.js";
 import {expect} from "chai";
 import {Setlist} from "../../src/helpers/setlist";
 
@@ -23,7 +23,6 @@ describe('ShowSetlistInteraction', function () {
             interaction.inGuild.returns(false)
 
             const showSetlistInteraction = new ShowSetlistInteraction(interaction, setlistFinder)
-
             const promise = showSetlistInteraction.invoke()
 
             await expect(promise).to.be.rejectedWith(InteractionGuardException, 'Sorry, this bot is not available through DMs');
@@ -31,14 +30,14 @@ describe('ShowSetlistInteraction', function () {
     })
 
     describe('when query option value is empty', () => {
-        it('replies with message "Missing query parameter"', async () => {
+        it('throws exception from query guard', async () => {
             interaction.inGuild.returns(true)
             interactionOptionsResolver.getString.withArgs('query').returns('')
 
             const showSetlistInteraction = new ShowSetlistInteraction(interaction, setlistFinder)
-            await showSetlistInteraction.invoke()
+            const promise = showSetlistInteraction.invoke()
 
-            sinon.assert.calledOnceWithExactly(interaction.reply, 'Missing query parameter');
+            await expect(promise).to.be.rejectedWith(InteractionGuardException, 'Missing query parameter');
         })
     })
 
@@ -56,9 +55,7 @@ describe('ShowSetlistInteraction', function () {
             }
         ]
 
-        exceptions.map(exceptionObject => {
-            const {name, expectedReply, exception} = exceptionObject
-
+        exceptions.map(({name, expectedReply, exception}) => {
             it(`replies with "${expectedReply}" when ${name} is thrown`, async () => {
                 interaction.inGuild.returns(true)
                 interactionOptionsResolver.getString.withArgs('query').returns('asdf')
@@ -66,7 +63,6 @@ describe('ShowSetlistInteraction', function () {
                 setlistFinder.invoke.throws(new exception)
 
                 const showSetlistInteraction = new ShowSetlistInteraction(interaction, setlistFinder)
-
                 await showSetlistInteraction.invoke()
 
                 sinon.assert.calledOnceWithExactly(interaction.reply, expectedReply);
@@ -80,7 +76,6 @@ describe('ShowSetlistInteraction', function () {
             setlistFinder.invoke.throws(new Error('lol'))
 
             const showSetlistInteraction = new ShowSetlistInteraction(interaction, setlistFinder)
-
             const promise = showSetlistInteraction.invoke()
 
             await expect(promise).to.be.rejectedWith(Error, 'lol');
@@ -90,10 +85,10 @@ describe('ShowSetlistInteraction', function () {
     describe('when setlist is found', () => {
         it('replies with setlist', async () => {
             const guildId = '123';
-            const query = 'asdf';
-            const expectedLocationAndDateText = 'Riga 2022';
+            const query = 'riga 2022';
+            const expectedLocationAndDateText = 'Riga 2022-10-11';
             const expectedSetlistUrl = 'https://www.setlist.fm/setlist/muse/2017/little-johns-farm-reading-england-43e29f4b.html';
-            const expectedTracklistText = 'asd';
+            const expectedTracklistText = 'some really cool setlist text';
 
             interaction.inGuild.returns(true)
             interaction.guildId = guildId
@@ -108,7 +103,6 @@ describe('ShowSetlistInteraction', function () {
             setlistFinder.invoke.withArgs(guildId, query).returns(Promise.resolve(setlistMock))
 
             const showSetlistInteraction = new ShowSetlistInteraction(interaction, setlistFinder)
-
             await showSetlistInteraction.invoke()
 
             const interactionReplyOptions = interaction.reply.firstCall.firstArg;
