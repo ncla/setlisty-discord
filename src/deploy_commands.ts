@@ -6,7 +6,7 @@ const { Routes } = require('discord-api-types/v9');
 const commands = [
     {
         name: 'show',
-        description: 'Search and show a setlist',
+        description: 'Search and show a setlist from this servers set artist',
         options: [
             {
                 type: 3,
@@ -14,6 +14,18 @@ const commands = [
                 description: 'Example: "shepherd bush empire", "london 2017"',
                 required: true,
                 autocomplete: true
+            }
+        ]
+    },
+    {
+        name: 'show-any',
+        description: 'Search and show a setlist from any artist',
+        options: [
+            {
+                type: 3,
+                name: 'query',
+                description: 'Example: "muse shepherd bush empire", "allie x london"',
+                required: true
             }
         ]
     },

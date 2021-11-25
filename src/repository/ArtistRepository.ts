@@ -16,16 +16,22 @@ export class ArtistRepository {
         return artist?.artist_id
     }
 
-    public async findOrInsertArtist(musicbrainzId: string): Promise<number> {
+    /**
+     * @param musicbrainzId
+     * @param artistName
+     * @return number Artist ID in the database
+     */
+    public async findOrInsertArtist(musicbrainzId: string, artistName?: string): Promise<number> {
         const artist = await this.knexClient('artists').where({musicbrainz_id: musicbrainzId}).select(['id']).first()
-
+        console.log("findOrInsertArtist args", musicbrainzId, artistName)
+        console.log('artist in findOrInsertArtist', artist)
         if (artist) {
             return artist.id
         }
 
         const inserted = await this.knexClient('artists').insert({
             musicbrainz_id: musicbrainzId,
-            artist_name: 'Muse' // todo
+            artist_name: artistName
         })
 
         return inserted[0]

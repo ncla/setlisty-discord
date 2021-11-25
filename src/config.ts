@@ -13,7 +13,8 @@ export default {
         token: getEnvVariable('DISCORD_SECRET_TOKEN')
     },
     setlistfm: {
-        baseURL: getEnvVariable('SETLIST_FM_BASE_URL'),
+        baseUrlWeb: getEnvVariable('SETLIST_FM_BASE_URL_WEB'),
+        baseUrlApi: getEnvVariable('SETLIST_FM_BASE_URL_API'),
         apiKey: getEnvVariable('SETLIST_FM_API_KEY')
     },
     musicbrainz: {

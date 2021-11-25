@@ -8,10 +8,13 @@ import knexClient from "./helpers/knexClient";
 import {ArtistRepository} from "./repository/ArtistRepository";
 import {SetlistRepository} from "./repository/SetlistRepository";
 import {InteractionGuardException, ShowSetlistInteraction} from "./interactions/ShowSetlistInteraction";
-import {SetlistfmRequestClient} from "./request/SetlistFm";
+import {SetlistfmAPIRequestClient} from "./request/SetlistFmAPI";
 import {AutocompleteSetlists} from "./autocomplete/Setlists";
 import {AutocompleteArtists} from "./autocomplete/Artists";
 import {MusicbrainzRequestClient} from "./request/Musicbrainz";
+import {ShowAnySetlistInteraction} from "./interactions/ShowAnySetlistInteraction";
+import {SetlistfmWebRequestClient} from "./request/SetlistFmWeb";
+import SetlistUpdater from "./setlist-updater";
 
 // See: http://knexjs.org/#typescript-support
 // declare module 'knex/types/tables' {
@@ -35,12 +38,15 @@ const client = new Client({
     intents: [Intents.FLAGS.GUILDS]
 });
 
-const SetlistRequestor = new SetlistfmRequestClient()
+const SetlistRequestorApi = new SetlistfmAPIRequestClient()
+const SetlistRequestorWeb = new SetlistfmWebRequestClient()
+const ArtistRepo = new ArtistRepository(knexClient)
 const SetlistRepo = new SetlistRepository(knexClient)
 const setlistFinder = new SetlistFinder(
     new ArtistRepository(knexClient),
     SetlistRepo
 )
+const setlistUpdater = new SetlistUpdater(SetlistRequestorApi, ArtistRepo)
 const musicBrainzRequestClient = new MusicbrainzRequestClient()
 
 client.on('ready', () => {
@@ -64,8 +70,12 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             }
         }
 
+        if (interaction.commandName === 'show-any') {
+            return new ShowAnySetlistInteraction(interaction, SetlistRequestorWeb, setlistUpdater, SetlistRepo).invoke()
+        }
+
         if (interaction.commandName === 'set-artist') {
-            return new SetArtist(interaction, SetlistRequestor)
+            return new SetArtist(interaction, SetlistRequestorApi)
         }
     }
 
