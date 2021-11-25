@@ -1,13 +1,15 @@
 import {AutocompleteInteraction} from "discord.js";
 import knexClient from "../helpers/knexClient";
-import {getFullSetlistData} from "../helpers/setlist";
 import {truncateString} from "../helpers";
+import {SetlistRepository} from "../repository/SetlistRepository";
 
 export class AutocompleteSetlists {
     public interaction: AutocompleteInteraction
+    private setlistRepository: SetlistRepository
 
-    public constructor(interaction: AutocompleteInteraction) {
+    public constructor(interaction: AutocompleteInteraction, setlistRepository: SetlistRepository) {
         this.interaction = interaction
+        this.setlistRepository = setlistRepository
         this.invoke()
     }
 
@@ -53,7 +55,7 @@ export class AutocompleteSetlists {
             .limit(5)
 
         const transformToChoices = async (setlistDbRecord: any) => {
-            const setlistObject = await getFullSetlistData(setlistDbRecord.id);
+            const setlistObject = await this.setlistRepository.getFullSetlistData(setlistDbRecord.id);
 
             return {
                 'name': truncateString(setlistObject.getAutocompleteChoiceTitle(), 100),

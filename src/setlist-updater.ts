@@ -1,9 +1,8 @@
-import axios, {AxiosInstance, AxiosResponse} from 'axios';
+import {AxiosResponse} from 'axios';
 import {groupBy} from "./helpers";
-import {findOrInsertArtist} from "./helpers/setlist";
 import knexClient from "./helpers/knexClient";
-import Config from "./config";
 import {SetlistfmRequestClient} from "./request/SetlistFm";
+import {ArtistRepository} from "./repository/ArtistRepository";
 
 class SetlistUpdater {
     public musicbrainzId: string
@@ -12,10 +11,12 @@ class SetlistUpdater {
     protected setlists: any[] = []
     protected setlistTracks: any[] = []
     private setlistRequestClient: SetlistfmRequestClient
+    private artistRepository: ArtistRepository;
 
-    public constructor(musicbrainzId: string, setlistRequestClient: SetlistfmRequestClient) {
+    public constructor(musicbrainzId: string, setlistRequestClient: SetlistfmRequestClient, artistRepository: ArtistRepository) {
         this.musicbrainzId = musicbrainzId
         this.setlistRequestClient = setlistRequestClient;
+        this.artistRepository = artistRepository;
     }
 
     public async run() {
@@ -23,7 +24,7 @@ class SetlistUpdater {
             return;
         }
 
-        this.artistIdInDb = await findOrInsertArtist(this.musicbrainzId)
+        this.artistIdInDb = await this.artistRepository.findOrInsertArtist(this.musicbrainzId)
 
         await this.fetchAllSetlists(this.musicbrainzId)
         console.log('done scraping')

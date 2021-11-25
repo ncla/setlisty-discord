@@ -1,12 +1,16 @@
-import {AutocompleteArtists} from "./autocomplete/Artists";
+import {SetArtist} from "./commands/SetArtist";
 
-const { Client, Intents } = require('discord.js');
-import {ShowSetlist} from './commands/ShowSetlist'
+const {Client, Intents} = require('discord.js');
 import {Interaction} from "discord.js";
 import Config from "./config";
-import {AutocompleteSetlists} from "./autocomplete/Setlists";
-import {SetArtist} from "./commands/SetArtist";
+import SetlistFinder from "./services/SetlistFinder";
+import knexClient from "./helpers/knexClient";
+import {ArtistRepository} from "./repository/ArtistRepository";
+import {SetlistRepository} from "./repository/SetlistRepository";
+import {InteractionGuardException, ShowSetlistInteraction} from "./interactions/ShowSetlistInteraction";
 import {SetlistfmRequestClient} from "./request/SetlistFm";
+import {AutocompleteSetlists} from "./autocomplete/Setlists";
+import {AutocompleteArtists} from "./autocomplete/Artists";
 import {MusicbrainzRequestClient} from "./request/Musicbrainz";
 
 // See: http://knexjs.org/#typescript-support
@@ -32,29 +36,47 @@ const client = new Client({
 });
 
 const SetlistRequestor = new SetlistfmRequestClient()
+const SetlistRepo = new SetlistRepository(knexClient)
+const setlistFinder = new SetlistFinder(
+    new ArtistRepository(knexClient),
+    SetlistRepo
+)
+const musicBrainzRequestClient = new MusicbrainzRequestClient()
 
 client.on('ready', () => {
     console.log(`Client is logged in as ${client.user!.tag} and ready!`);
-    client.user!.setActivity('/show to start', { type: 'LISTENING' })
+    client.user!.setActivity('/show to start', {type: 'LISTENING'})
 });
 
 client.on('interactionCreate', async (interaction: Interaction) => {
-    if (interaction.isAutocomplete() && interaction.commandName === 'show') {
-        return new AutocompleteSetlists(interaction)
+    if (interaction.isCommand()) {
+        if (interaction.commandName === 'show') {
+            const showSetlistInteraction = new ShowSetlistInteraction(interaction, setlistFinder)
+
+            try {
+                await showSetlistInteraction.invoke()
+            } catch (err) {
+                if (err instanceof InteractionGuardException) {
+                    return await interaction.reply(err.options)
+                }
+
+                return await interaction.reply('Encountered unexpected exception')
+            }
+        }
+
+        if (interaction.commandName === 'set-artist') {
+            return new SetArtist(interaction, SetlistRequestor)
+        }
     }
 
-    if (interaction.isAutocomplete() && interaction.commandName === 'set-artist') {
-        return new AutocompleteArtists(interaction, new MusicbrainzRequestClient())
-    }
+    if (interaction.isAutocomplete()) {
+        if (interaction.commandName === 'show') {
+            return new AutocompleteSetlists(interaction, SetlistRepo)
+        }
 
-    if (!interaction.isCommand()) return;
-
-    if (interaction.commandName === 'show') {
-        return new ShowSetlist(interaction)
-    }
-
-    if (interaction.commandName === 'set-artist') {
-        return new SetArtist(interaction, SetlistRequestor)
+        if (interaction.commandName === 'set-artist') {
+            return new AutocompleteArtists(interaction, musicBrainzRequestClient)
+        }
     }
 });
 
