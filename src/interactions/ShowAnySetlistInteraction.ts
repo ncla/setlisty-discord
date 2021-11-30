@@ -1,25 +1,30 @@
 import {CommandInteraction, InteractionReplyOptions, MessageEmbed} from "discord.js";
-import {SetlistfmWebRequestClient} from "../request/SetlistFmWeb";
-import {SetlistFmWebSearchResultsParser} from "../parsers/SetlistFmWebSearchResults";
 import SetlistUpdater from "../setlist-updater";
-import {ShowSetlistInteraction} from "./ShowSetlistInteraction";
 import {Setlist} from "../helpers/setlist";
 import {SetlistRepository} from "../repository/SetlistRepository";
+import SetlistFinderWeb from "../services/SetlistFinderWeb";
+import {mustContainStringParameter, onlyAvailableThroughGuildsConcern} from "../helpers/interaction_guards";
+import {SetlistNotFoundException} from "../helpers/exceptions";
 
 export class ShowAnySetlistInteraction {
     protected interaction: CommandInteraction
-
-    protected interactionGuards: Array<Function> = [
-
-    ]
-
-    private setlistWebRequestor: SetlistfmWebRequestClient;
     private setlistUpdator: SetlistUpdater;
     private setlistRepository: SetlistRepository;
+    private setlistWebFinder: SetlistFinderWeb
 
-    constructor(interaction: CommandInteraction, setlistWebRequestor: SetlistfmWebRequestClient, setlistUpdator: SetlistUpdater, setlistRepository: SetlistRepository) {
+    protected interactionGuards: Array<Function> = [
+        onlyAvailableThroughGuildsConcern,
+        mustContainStringParameter('query')
+    ]
+
+    constructor(
+        interaction: CommandInteraction,
+        setlistWebFinder: SetlistFinderWeb,
+        setlistUpdator: SetlistUpdater,
+        setlistRepository: SetlistRepository,
+    ) {
         this.interaction = interaction;
-        this.setlistWebRequestor = setlistWebRequestor;
+        this.setlistWebFinder = setlistWebFinder
         this.setlistUpdator = setlistUpdator;
         this.setlistRepository = setlistRepository;
     }
@@ -32,33 +37,52 @@ export class ShowAnySetlistInteraction {
 
     public async invoke() {
         await this.runInteractionGuards()
+        await this.run()
+    }
 
-        const query = this.interaction.options.getString('query')
+    /**
+     * TODO: Handle interaction when requestor and updator tasks may take longer than 3000ms
+     */
+    public async run() {
+        let setlist
 
-        if (!query) return
+        try {
+            // Hit setlist.fm web search
+            const setlistId = await this.setlistWebFinder.findSetlistIdThroughWebSearch(this.getQuery())
 
-        const searchResults = await this.setlistWebRequestor.search(query)
-
-        const parser = new SetlistFmWebSearchResultsParser(searchResults).parse()
-
-        if (!parser) return
-
-        const firstSetlistId = parser[0].setlistId
-
-
-        // const stUpdator = new SetlistUpdater()
-        const epic = await this.setlistUpdator.runSingleSetlistUpdate(firstSetlistId)
-
-        const setlist = await this.setlistRepository.getSetlistById(firstSetlistId)
-
-        if (!setlist) return
+            setlist = await this.getSetlist(setlistId)
+        } catch (err) {
+            if (err instanceof SetlistFinderWeb.NoSetlistsFoundException) {
+                return 'No search results were found!'
+            } else if (err instanceof SetlistNotFoundException) {
+                return 'No setlist was found!'
+            } else {
+                throw err
+            }
+        }
 
         return this.interaction.reply(ShowAnySetlistInteraction.buildSetlistReply(setlist))
+    }
 
-        // check if we have in db the setlist
-        // if we do, return
-        // if we dont, we fetch through API single setlist and insert it in the db (with artist entry)
-        // then fetch the setlist like we normally would
+    private async getSetlist(setlistId: string) {
+        // On the off-chance that we do have that setlist in our database :-)
+        let setlist = await this.setlistRepository.getSetlistById(setlistId)
+
+        if (setlist) return setlist
+
+        // Reuse the setlist updater and run for single setlist
+        await this.setlistUpdator.runSingleSetlistUpdate(setlistId)
+
+        // Try again
+        setlist = await this.setlistRepository.getSetlistById(setlistId)
+
+        if (!setlist) throw new SetlistNotFoundException()
+
+        return setlist
+    }
+
+    private getQuery(): string {
+        return this.interaction.options.getString('query') as string
     }
 
     private static buildSetlistReply(setlist: Setlist): InteractionReplyOptions {

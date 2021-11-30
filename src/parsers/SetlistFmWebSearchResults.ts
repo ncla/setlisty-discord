@@ -7,14 +7,8 @@ export interface ParsedSearchResult {
 }
 
 export class SetlistFmWebSearchResultsParser {
-    protected response: AxiosResponse;
-
-    public constructor(response: AxiosResponse) {
-        this.response = response;
-    }
-
-    public parse(): Array<ParsedSearchResult> {
-        const dom = new JSDOM(this.response.data);
+    public parse(response: AxiosResponse): Array<ParsedSearchResult> {
+        const dom = new JSDOM(response.data);
         const document = dom.window.document
 
         const noResultsAlert = document.querySelector(".festivalBg")

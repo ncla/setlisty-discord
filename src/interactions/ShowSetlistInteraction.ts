@@ -1,34 +1,8 @@
 import {CommandInteraction, InteractionReplyOptions, MessageEmbed} from "discord.js";
 import SetlistFinder from "../services/SetlistFinder";
 import {Setlist} from "../helpers/setlist";
-import TypedException from "../helpers/TypedException";
-
-function onlyAvailableThroughGuildsConcern(interaction: CommandInteraction) {
-    if (interaction.inGuild() === false) {
-        throw new InteractionGuardException('Sorry, this bot is not available through DMs')
-    }
-}
-
-function mustContainStringParameter(name: string) {
-    return (interaction: CommandInteraction) => {
-        if (!interaction.options.getString(name)) {
-            throw new InteractionGuardException('Missing query parameter')
-        }
-    }
-}
-
-export class InteractionGuardException extends TypedException {
-    public options: InteractionReplyOptions;
-
-    constructor(msg: string) {
-        super(msg);
-
-        this.options = {
-            content: msg,
-            ephemeral: true
-        }
-    }
-}
+import {mustContainStringParameter, onlyAvailableThroughGuildsConcern} from "../helpers/interaction_guards";
+import {ArtistNotFoundException, SetlistNotFoundException} from "../helpers/exceptions";
 
 export class ShowSetlistInteraction {
     protected interaction: CommandInteraction
@@ -81,9 +55,9 @@ export class ShowSetlistInteraction {
     }
 
     private static getErrorMessage(err: any): string {
-        if (err instanceof SetlistFinder.ArtistNotFoundException) {
+        if (err instanceof ArtistNotFoundException) {
             return 'No artist ID set in this server'
-        } else if (err instanceof SetlistFinder.SetlistNotFoundException) {
+        } else if (err instanceof SetlistNotFoundException) {
             return 'No setlist was found!'
         } else {
             throw err

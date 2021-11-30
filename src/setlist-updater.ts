@@ -36,6 +36,8 @@ class SetlistUpdater {
         await this.update()
 
         console.log('Updated')
+
+        this.cleanUp()
     }
 
     public async runSingleSetlistUpdate(setlistId: string) {
@@ -45,7 +47,10 @@ class SetlistUpdater {
 
         await this.update()
 
-        // cleanup
+        this.cleanUp()
+    }
+
+    protected cleanUp() {
         this.artists = []
         this.setlists = []
         this.setlistTracks = []
@@ -156,7 +161,7 @@ class SetlistUpdater {
         })
     }
 
-    protected async mapSetlistEntryMbidToArtistDbId(setlist: any) {
+    protected async mapSetlistEntryArtistMbidToArtistDbId(setlist: any) {
         console.log("mapSetlistEntryMbidToArtistDbId setlist.artist_id", setlist.artist_id)
         setlist.artist_id = await this.getCachedArtistDbIdFromMusicbrainzId(setlist.artist_id)
 
@@ -165,6 +170,7 @@ class SetlistUpdater {
 
     protected async update() {
         console.log(1, this.artists)
+        // Object.entries because we are keying by Musicbrainz ID
         for (let [artistMbid, artist] of Object.entries(this.artists)) {
             console.log('update/insert artist', artist)
             console.log(2)
@@ -176,7 +182,7 @@ class SetlistUpdater {
 
             console.log("ARIST ID DB BEFORE:", setlistItem.artist_id)
 
-            const setlist = await this.mapSetlistEntryMbidToArtistDbId(setlistItem)
+            const setlist = await this.mapSetlistEntryArtistMbidToArtistDbId(setlistItem)
 
             console.log("ARIST ID DB AFTER:", setlist.artist_id)
 
