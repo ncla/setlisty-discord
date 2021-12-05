@@ -1,8 +1,8 @@
 import {AxiosResponse} from 'axios';
 import {groupBy} from "./helpers";
-import knexClient from "./helpers/knexClient";
 import {SetlistfmAPIRequestClient} from "./request/SetlistFmAPI";
 import {ArtistRepository} from "./repository/ArtistRepository";
+import {Knex} from "knex";
 
 class SetlistUpdater {
     protected setlistEntries: any[] = []
@@ -15,13 +15,16 @@ class SetlistUpdater {
 
     private setlistRequestClient: SetlistfmAPIRequestClient
     private artistRepository: ArtistRepository;
+    private knexClient: Knex;
 
     public constructor(
         setlistRequestClient: SetlistfmAPIRequestClient,
-        artistRepository: ArtistRepository
+        artistRepository: ArtistRepository,
+        knexClient: Knex
     ) {
         this.setlistRequestClient = setlistRequestClient;
         this.artistRepository = artistRepository;
+        this.knexClient = knexClient;
     }
 
     public async runArtistUpdate(musicbrainzId: string) {
@@ -92,8 +95,6 @@ class SetlistUpdater {
         console.log("NOT CACHED")
 
         const artistDbId = await this.artistRepository.findOrInsertArtist(musicbrainzId)
-
-        console.log(7)
 
         this.artistsMbidsMappedToDbIds[musicbrainzId] = artistDbId
 
@@ -169,14 +170,12 @@ class SetlistUpdater {
     }
 
     protected async update() {
-        console.log(1, this.artists)
         // Object.entries because we are keying by Musicbrainz ID
         for (let [artistMbid, artist] of Object.entries(this.artists)) {
             console.log('update/insert artist', artist)
-            console.log(2)
             await this.artistRepository.findOrInsertArtist(artist.musicbrainz_id, artist.artist_name)
         }
-        console.log(3)
+
         for (let setlistItem of this.setlists) {
             console.log(`Querying setlist ID: ${setlistItem.id}`)
 
@@ -186,7 +185,7 @@ class SetlistUpdater {
 
             console.log("ARIST ID DB AFTER:", setlist.artist_id)
 
-            const existing = await knexClient('setlists')
+            const existing = await this.knexClient('setlists')
                 .where({id: setlist.id}).then(rows => rows.length)
 
             console.log(existing)
@@ -195,13 +194,13 @@ class SetlistUpdater {
             if (existing) {
                 console.log(`Updating existing setlist with ID ${setlist.id}`)
 
-                await knexClient('setlists')
+                await this.knexClient('setlists')
                     .where({id: setlist.id})
                     .update(setlist)
             } else {
                 console.log(`Inserting new setlist with ID ${setlist.id}`)
 
-                await knexClient('setlists').insert(setlist)
+                await this.knexClient('setlists').insert(setlist)
             }
         }
         // Grouping here does not guarantee that same track won't be inserted multiple times
@@ -210,13 +209,13 @@ class SetlistUpdater {
         for (const [setlistId, setlistTracks] of Object.entries(tracksGroupedBySetlistId)) {
             console.log(`Wiping setlist tracks for setlist ID ${setlistId}`)
 
-            await knexClient('setlist_tracks')
+            await this.knexClient('setlist_tracks')
                 .where('setlist_id', setlistId)
                 .del()
 
             console.log(`Inserting new setlist tracks for setlist ID ${setlistId}`)
 
-            await knexClient('setlist_tracks')
+            await this.knexClient('setlist_tracks')
                 .insert(setlistTracks)
         }
 

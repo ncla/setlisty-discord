@@ -44,12 +44,16 @@ export class ShowAnySetlistInteraction {
      * TODO: Handle interaction when requestor and updator tasks may take longer than 3000ms
      */
     public async run() {
+        const reply = await this.buildReply()
+        return this.interaction.reply(reply)
+    }
+
+    private async buildReply(): Promise<InteractionReplyOptions | string> {
         let setlist
 
         try {
             // Hit setlist.fm web search
             const setlistId = await this.setlistWebFinder.findSetlistIdThroughWebSearch(this.getQuery())
-
             setlist = await this.getSetlist(setlistId)
         } catch (err) {
             if (err instanceof SetlistFinderWeb.NoSetlistsFoundException) {
@@ -61,7 +65,7 @@ export class ShowAnySetlistInteraction {
             }
         }
 
-        return this.interaction.reply(ShowAnySetlistInteraction.buildSetlistReply(setlist))
+        return ShowAnySetlistInteraction.buildSetlistReply(setlist)
     }
 
     private async getSetlist(setlistId: string) {
