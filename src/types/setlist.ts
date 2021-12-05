@@ -13,10 +13,10 @@ export interface SetlistDbInterface {
 
 export interface Track {
     setlist_id: string,
-    name: string,
+    name: string|null,
     tape: boolean,
     set_number: number,
-    note: string,
+    note: string|null,
     order_number: number
 }
 

@@ -27,8 +27,8 @@ export class Setlist implements SetlistInterface {
 
             text +=
                 `${newline ? '\n' : ''}` +
-                `${track.order_number + 1}. ${track.tape ? '🖭' : ''} **${track.name}** `
-                + `${track.note ? ` (*${track.note}*)` : ''}\n`
+                this.composeTrackNameString(track)
+                + this.composeTrackNoteString(track) + '\n'
             setNumber = track.set_number
         }
 
@@ -49,5 +49,23 @@ export class Setlist implements SetlistInterface {
 
     public getAutocompleteChoiceTitle(): string {
         return `${this.getDateText()} – ${this.getFullLocationText()}`
+    }
+
+    private composeTrackNameString(track: Track): string {
+        return `${track.order_number + 1}. ${track.tape ? '🖭' : ''} ${track.name === null ? this.composeTrackNameFromTrackNote(track) : `**${track.name}**`} `
+    }
+
+    private composeTrackNoteString(track: Track): string {
+        let markupNote = ''
+
+        if (track.name && track.note) {
+            markupNote = `(*${track.note}*)`
+        }
+
+        return `${markupNote}`
+    }
+
+    private composeTrackNameFromTrackNote(track: Track): string {
+        return `${track.note}`
     }
 }

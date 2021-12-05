@@ -144,13 +144,13 @@ class SetlistUpdater {
 
         setlist.sets.set.forEach((setItem: any) => {
             setItem.song.forEach((songItem: any, songIndex: number) => {
-                // There are some edge cases where there is no name, such as for Unknown songs.
-                if (songItem.name === '') return
-
                 // TODO: Key by setlist ID?
                 this.setlistTracks.push({
                     setlist_id: setlist.id,
-                    name: songItem.name,
+                    // There are some edge cases where there is no name, such as for Unknown songs, intro songs.
+                    // Web displays "Unknown" or "Intro" respectively but in the API name is just empty string.
+                    // See these following setlist IDs: 43d6e773 53d7a32d 43de0fcf 43de0fcf
+                    name: songItem.name === '' ? null : songItem.name,
                     tape: songItem.tape !== undefined,
                     set_number: setItem.encore ?? 0,
                     note: songItem.info ?? null,
