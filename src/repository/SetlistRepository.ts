@@ -42,7 +42,7 @@ export class SetlistRepository {
 
     async getSetlistById(id: string): Promise<Setlist | undefined> {
         try {
-            return this.getFullSetlistData(id)
+            return await this.getFullSetlistData(id)
         } catch (e) {
             return undefined
         }
