@@ -21,7 +21,7 @@ export default class SetlistFinderWeb {
 
         const setlistResults = this.setlistFmWebSearchResultsParser.parse(searchResults)
 
-        if (!setlistResults) {
+        if (setlistResults.length === 0) {
             throw new SetlistFinderWeb.NoSetlistsFoundException()
         }
 

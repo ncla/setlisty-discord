@@ -65,7 +65,8 @@ async function execute() {
     try {
         let updater = new SetlistUpdater(
             new SetlistfmAPIRequestClient(),
-            new ArtistRepository(knexClient)
+            new ArtistRepository(knexClient),
+            knexClient
         );
         await updater.runArtistUpdate(artist.musicbrainz_id)
     } catch (err) {

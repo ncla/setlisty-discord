@@ -11,7 +11,7 @@ export class SetlistFmWebSearchResultsParser {
         const dom = new JSDOM(response.data);
         const document = dom.window.document
 
-        const noResultsAlert = document.querySelector(".festivalBg")
+        const noResultsAlert = document.querySelector("div.alert.alert-danger")
 
         if (noResultsAlert) {
             return []

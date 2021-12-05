@@ -78,7 +78,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             return new ShowAnySetlistInteraction(
                 interaction,
                 setlistFinderWeb,
-                new SetlistUpdater(setlistRequestorApi, artistRepo),
+                new SetlistUpdater(setlistRequestorApi, artistRepo, knexClient),
                 setlistRepo
             ).invoke()
         }
