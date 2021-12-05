@@ -1,12 +1,12 @@
 import {Interaction} from "discord.js";
 import knexClient from "../helpers/knexClient";
-import {SetlistfmRequestClient} from "../request/SetlistFm";
+import {SetlistfmAPIRequestClient} from "../request/SetlistFmAPI";
 
 export class SetArtist {
     public interaction: Interaction
-    protected setlistFmClient: SetlistfmRequestClient
+    protected setlistFmClient: SetlistfmAPIRequestClient
 
-    public constructor(interaction: Interaction, setlistFmRequestClient: SetlistfmRequestClient) {
+    public constructor(interaction: Interaction, setlistFmRequestClient: SetlistfmAPIRequestClient) {
         this.interaction = interaction
         this.setlistFmClient = setlistFmRequestClient;
         this.invoke()

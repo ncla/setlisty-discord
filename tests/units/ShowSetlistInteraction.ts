@@ -1,4 +1,9 @@
-import {InteractionGuardException, ShowSetlistInteraction} from "../../src/interactions/ShowSetlistInteraction";
+import {ShowSetlistInteraction} from "../../src/interactions/ShowSetlistInteraction";
+import {
+    ArtistNotFoundException,
+    InteractionGuardException,
+    SetlistNotFoundException
+} from "../../src/helpers/exceptions"
 import SetlistFinder from "../../src/services/SetlistFinder";
 import sinon, {SinonStubbedInstance} from "sinon";
 import {CommandInteraction, CommandInteractionOptionResolver} from "discord.js";
@@ -46,12 +51,12 @@ describe('ShowSetlistInteraction', function () {
             {
                 name: 'ArtistNotFoundException',
                 expectedReply: 'No artist ID set in this server',
-                exception: SetlistFinder.ArtistNotFoundException
+                exception: ArtistNotFoundException
             },
             {
                 name: 'SetlistNotFoundException',
                 expectedReply: 'No setlist was found!',
-                exception: SetlistFinder.SetlistNotFoundException
+                exception: SetlistNotFoundException
             }
         ]
 

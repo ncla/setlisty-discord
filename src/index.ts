@@ -7,11 +7,17 @@ import SetlistFinder from "./services/SetlistFinder";
 import knexClient from "./helpers/knexClient";
 import {ArtistRepository} from "./repository/ArtistRepository";
 import {SetlistRepository} from "./repository/SetlistRepository";
-import {InteractionGuardException, ShowSetlistInteraction} from "./interactions/ShowSetlistInteraction";
-import {SetlistfmRequestClient} from "./request/SetlistFm";
+import {ShowSetlistInteraction} from "./interactions/ShowSetlistInteraction";
+import {SetlistfmAPIRequestClient} from "./request/SetlistFmAPI";
 import {AutocompleteSetlists} from "./autocomplete/Setlists";
 import {AutocompleteArtists} from "./autocomplete/Artists";
 import {MusicbrainzRequestClient} from "./request/Musicbrainz";
+import {ShowAnySetlistInteraction} from "./interactions/ShowAnySetlistInteraction";
+import {SetlistfmWebRequestClient} from "./request/SetlistFmWeb";
+import SetlistUpdater from "./setlist-updater";
+import SetlistFinderWeb from "./services/SetlistFinderWeb";
+import {SetlistFmWebSearchResultsParser} from "./parsers/SetlistFmWebSearchResults";
+import {InteractionGuardException} from "./helpers/exceptions";
 
 // See: http://knexjs.org/#typescript-support
 // declare module 'knex/types/tables' {
@@ -35,11 +41,15 @@ const client = new Client({
     intents: [Intents.FLAGS.GUILDS]
 });
 
-const SetlistRequestor = new SetlistfmRequestClient()
-const SetlistRepo = new SetlistRepository(knexClient)
+const setlistRequestorApi = new SetlistfmAPIRequestClient()
+const setlistRequestorWeb = new SetlistfmWebRequestClient()
+const setlistFmWebSearchResultsParser = new SetlistFmWebSearchResultsParser()
+const setlistFinderWeb = new SetlistFinderWeb(setlistRequestorWeb, setlistFmWebSearchResultsParser)
+const artistRepo = new ArtistRepository(knexClient)
+const setlistRepo = new SetlistRepository(knexClient)
 const setlistFinder = new SetlistFinder(
     new ArtistRepository(knexClient),
-    SetlistRepo
+    setlistRepo
 )
 const musicBrainzRequestClient = new MusicbrainzRequestClient()
 
@@ -64,14 +74,23 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             }
         }
 
+        if (interaction.commandName === 'show-any') {
+            return new ShowAnySetlistInteraction(
+                interaction,
+                setlistFinderWeb,
+                new SetlistUpdater(setlistRequestorApi, artistRepo, knexClient),
+                setlistRepo
+            ).invoke()
+        }
+
         if (interaction.commandName === 'set-artist') {
-            return new SetArtist(interaction, SetlistRequestor)
+            return new SetArtist(interaction, setlistRequestorApi)
         }
     }
 
     if (interaction.isAutocomplete()) {
         if (interaction.commandName === 'show') {
-            return new AutocompleteSetlists(interaction, SetlistRepo)
+            return new AutocompleteSetlists(interaction, setlistRepo)
         }
 
         if (interaction.commandName === 'set-artist') {

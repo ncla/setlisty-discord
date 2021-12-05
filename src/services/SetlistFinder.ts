@@ -1,12 +1,9 @@
 import {ArtistRepository} from "../repository/ArtistRepository";
 import {SetlistRepository} from "../repository/SetlistRepository";
 import {Setlist} from "../helpers/setlist";
-import TypedException from "../helpers/TypedException";
+import {ArtistNotFoundException, SetlistNotFoundException} from "../helpers/exceptions";
 
 export default class SetlistFinder {
-    static ArtistNotFoundException = class extends TypedException {}
-    static SetlistNotFoundException = class extends TypedException {}
-
     private artistRepository: ArtistRepository;
     private setlistRepository: SetlistRepository;
 
@@ -21,24 +18,29 @@ export default class SetlistFinder {
      */
     public async invoke(guildId: string, query: string): Promise<Setlist> {
         const artistId = await this.findArtistIdForGuild(guildId)
-        return this.findSetlist(query, artistId)
+        return this.findSetlistByInteractionQuery(query, artistId)
     }
 
     /**
      * @throws SetlistNotFoundException
      */
-    private async findSetlist(query: string, artistId: number): Promise<Setlist> {
+    public async findSetlistByInteractionQuery(query: string, artistId: number): Promise<Setlist> {
         let setlist = await this.getSetlistByAutocompleteQuery(query)
             ?? await this.setlistRepository.getSetlistBySearchQuery(query, artistId)
 
         if (!setlist) {
-            throw new SetlistFinder.SetlistNotFoundException()
+            throw new SetlistNotFoundException()
         }
 
         return setlist
     }
 
-    private async getSetlistByAutocompleteQuery(query: string): Promise<Setlist | undefined> {
+    /**
+     *
+     * @param query Example: "id:239fccf3"
+     * @private
+     */
+    public async getSetlistByAutocompleteQuery(query: string): Promise<Setlist | undefined> {
         if (query.startsWith('id:')) {
             const id = query.replace('id:', '')
             return this.setlistRepository.getSetlistById(id)
@@ -52,7 +54,7 @@ export default class SetlistFinder {
         const artistId = await this.artistRepository.getArtistIdForGuildId(guildId)
 
         if (!artistId) {
-            throw new SetlistFinder.ArtistNotFoundException()
+            throw new ArtistNotFoundException()
         }
 
         return artistId

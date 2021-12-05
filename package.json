@@ -38,7 +38,7 @@
   },
   "scripts": {
     "start": "yarn tsc && node dist/index.js",
-    "register": "yarn tsc && node dist/deploy-commands.js",
+    "register": "yarn tsc && node dist/deploy_commands.js",
     "scrape": "yarn tsc && node dist/scrape.js",
     "schedule": "node dist/schedule.js",
     "nodemon": "./node_modules/nodemon/bin/nodemon.js",

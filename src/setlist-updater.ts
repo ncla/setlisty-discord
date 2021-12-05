@@ -1,52 +1,78 @@
 import {AxiosResponse} from 'axios';
 import {groupBy} from "./helpers";
-import knexClient from "./helpers/knexClient";
-import {SetlistfmRequestClient} from "./request/SetlistFm";
+import {SetlistfmAPIRequestClient} from "./request/SetlistFmAPI";
 import {ArtistRepository} from "./repository/ArtistRepository";
+import {Knex} from "knex";
 
 class SetlistUpdater {
-    public musicbrainzId: string
-    protected artistIdInDb?: number
-    protected responses: any[] = []
+    protected setlistEntries: any[] = []
+
+    protected artistsMbidsMappedToDbIds: { [key: string]: number } = {}
+
+    protected artists: any[] = []
     protected setlists: any[] = []
     protected setlistTracks: any[] = []
-    private setlistRequestClient: SetlistfmRequestClient
-    private artistRepository: ArtistRepository;
 
-    public constructor(musicbrainzId: string, setlistRequestClient: SetlistfmRequestClient, artistRepository: ArtistRepository) {
-        this.musicbrainzId = musicbrainzId
+    private setlistRequestClient: SetlistfmAPIRequestClient
+    private artistRepository: ArtistRepository;
+    private knexClient: Knex;
+
+    public constructor(
+        setlistRequestClient: SetlistfmAPIRequestClient,
+        artistRepository: ArtistRepository,
+        knexClient: Knex
+    ) {
         this.setlistRequestClient = setlistRequestClient;
         this.artistRepository = artistRepository;
+        this.knexClient = knexClient;
     }
 
-    public async run() {
-        if (this.musicbrainzId === undefined) {
-            return;
-        }
+    public async runArtistUpdate(musicbrainzId: string) {
+        await this.fetchArtistSetlists(musicbrainzId)
 
-        this.artistIdInDb = await this.artistRepository.findOrInsertArtist(this.musicbrainzId)
+        console.log('Done fetching all setlists')
 
-        await this.fetchAllSetlists(this.musicbrainzId)
-        console.log('done scraping')
-        this.responses.forEach((response: any) => {
-            this.parseApiResponseSetlistList(response)
-        })
+        this.parseSetlistEntries()
+
+        console.log('Parsing finished')
 
         await this.update()
+
+        console.log('Updated')
+
+        this.cleanUp()
     }
 
-    public async fetchAllSetlists(musicbrainzId: string) {
+    public async runSingleSetlistUpdate(setlistId: string) {
+        await this.fetchSingleSetlist(setlistId)
+
+        this.parseSetlistEntries()
+
+        await this.update()
+
+        this.cleanUp()
+    }
+
+    protected cleanUp() {
+        this.artists = []
+        this.setlists = []
+        this.setlistTracks = []
+        this.setlistEntries = []
+    }
+
+    public async fetchArtistSetlists(musicbrainzId: string) {
         const firstPage = await this.setlistRequestClient.fetchSetlistsPage(musicbrainzId)
 
         const pageCount = Math.ceil(firstPage.data.total / firstPage.data.itemsPerPage)
-
-        this.responses.push(firstPage)
+        // const pageCount = 1
+        this.pushSetlistEntriesFromPaginationResponse(firstPage)
 
         let page = 2
 
         while (page <= pageCount) {
             await this.setlistRequestClient.fetchSetlistsPage(musicbrainzId, page).then(response => {
-                this.responses.push(response)
+                this.pushSetlistEntriesFromPaginationResponse(response)
+
                 page++
             })
         }
@@ -54,15 +80,47 @@ class SetlistUpdater {
         return this
     }
 
-    protected parseApiResponseSetlistList(response: AxiosResponse) {
-        response.data.setlist.forEach((setlistItem: any, setlistIndex: number) => {
-            this.parseApiSetlistItemFromSetlistArray(setlistItem)
-        })
+    public async fetchSingleSetlist(setlistId: string) {
+        const response = await this.setlistRequestClient.fetchSetlist(setlistId)
 
-        return this
+        this.setlistEntries.push(response.data)
     }
 
-    protected parseApiSetlistItemFromSetlistArray(setlist: any) {
+    public async getCachedArtistDbIdFromMusicbrainzId(musicbrainzId: string): Promise<number> {
+        if (this.artistsMbidsMappedToDbIds[musicbrainzId]) {
+            console.log("CACHED")
+            return this.artistsMbidsMappedToDbIds[musicbrainzId]
+        }
+
+        console.log("NOT CACHED")
+
+        const artistDbId = await this.artistRepository.findOrInsertArtist(musicbrainzId)
+
+        this.artistsMbidsMappedToDbIds[musicbrainzId] = artistDbId
+
+        return artistDbId
+    }
+
+    public pushSetlistEntriesFromPaginationResponse(response: AxiosResponse) {
+        response.data.setlist.forEach((setlistItem: any, setlistIndex: number) => {
+            this.setlistEntries.push(setlistItem)
+        })
+    }
+
+    protected parseSetlistEntries() {
+        this.setlistEntries.forEach((setlistEntry: any) => {
+            this.parseSetlistEntry(setlistEntry)
+        })
+    }
+
+    protected parseSetlistEntry(setlist: any) {
+        // Artists
+        this.artists[setlist.artist.mbid] = {
+            musicbrainz_id: setlist.artist.mbid,
+            artist_name: setlist.artist.name
+        }
+
+        // Setlists
         let parts = setlist.eventDate.split('-')
         // Note: months are 0-based
         let eventDate = `${parts[2]}-${parts[1]}-${parts[0]}`
@@ -71,7 +129,7 @@ class SetlistUpdater {
         // TODO: Key by setlist ID?
         this.setlists.push({
             id: setlist.id,
-            artist_id: this.artistIdInDb,
+            artist_id: setlist.artist.mbid, // this has to be mapped to a database artist_id for later
             date: eventDate,
             venue: JSON.stringify(setlist.venue),
             venue_name: setlist.venue.name,
@@ -81,6 +139,7 @@ class SetlistUpdater {
             url: setlist.url
         })
 
+        // Tracks
         let songIndexOverall = 0
 
         setlist.sets.set.forEach((setItem: any) => {
@@ -103,27 +162,45 @@ class SetlistUpdater {
         })
     }
 
-    protected async update() {
-        for (const setlist of this.setlists) {
-            console.log(`Querying setlist ID: ${setlist.id}`)
+    protected async mapSetlistEntryArtistMbidToArtistDbId(setlist: any) {
+        console.log("mapSetlistEntryMbidToArtistDbId setlist.artist_id", setlist.artist_id)
+        setlist.artist_id = await this.getCachedArtistDbIdFromMusicbrainzId(setlist.artist_id)
 
-            const existing = await knexClient('setlists')
+        return setlist;
+    }
+
+    protected async update() {
+        // Object.entries because we are keying by Musicbrainz ID
+        for (let [artistMbid, artist] of Object.entries(this.artists)) {
+            console.log('update/insert artist', artist)
+            await this.artistRepository.findOrInsertArtist(artist.musicbrainz_id, artist.artist_name)
+        }
+
+        for (let setlistItem of this.setlists) {
+            console.log(`Querying setlist ID: ${setlistItem.id}`)
+
+            console.log("ARIST ID DB BEFORE:", setlistItem.artist_id)
+
+            const setlist = await this.mapSetlistEntryArtistMbidToArtistDbId(setlistItem)
+
+            console.log("ARIST ID DB AFTER:", setlist.artist_id)
+
+            const existing = await this.knexClient('setlists')
                 .where({id: setlist.id}).then(rows => rows.length)
 
-            // console.log(existing)
-
+            console.log(existing)
             console.log(`Setlist exists: ${existing ? 'true' : 'false'}`)
 
             if (existing) {
                 console.log(`Updating existing setlist with ID ${setlist.id}`)
 
-                await knexClient('setlists')
+                await this.knexClient('setlists')
                     .where({id: setlist.id})
                     .update(setlist)
             } else {
                 console.log(`Inserting new setlist with ID ${setlist.id}`)
 
-                await knexClient('setlists').insert(setlist)
+                await this.knexClient('setlists').insert(setlist)
             }
         }
         // Grouping here does not guarantee that same track won't be inserted multiple times
@@ -132,13 +209,13 @@ class SetlistUpdater {
         for (const [setlistId, setlistTracks] of Object.entries(tracksGroupedBySetlistId)) {
             console.log(`Wiping setlist tracks for setlist ID ${setlistId}`)
 
-            await knexClient('setlist_tracks')
+            await this.knexClient('setlist_tracks')
                 .where('setlist_id', setlistId)
                 .del()
 
             console.log(`Inserting new setlist tracks for setlist ID ${setlistId}`)
 
-            await knexClient('setlist_tracks')
+            await this.knexClient('setlist_tracks')
                 .insert(setlistTracks)
         }
 
