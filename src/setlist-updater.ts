@@ -3,6 +3,7 @@ import {groupBy} from "./helpers";
 import {SetlistfmAPIRequestClient} from "./request/SetlistFmAPI";
 import {ArtistRepository} from "./repository/ArtistRepository";
 import {Knex} from "knex";
+import dayjs from "dayjs";
 
 class SetlistUpdater {
     protected setlistEntries: any[] = []
@@ -136,13 +137,16 @@ class SetlistUpdater {
             city_name: setlist.venue.city.name,
             state_name: setlist.venue.city.state,
             country_name: setlist.venue.city.country.name,
-            url: setlist.url
+            url: setlist.url,
+            note: setlist.info ?? null,
+            tour_name: setlist?.tour?.name ?? null,
+            last_revision: setlist?.lastUpdated ? dayjs(setlist.lastUpdated).format('YYYY-MM-DD HH:mm:ss') : null
         })
 
         // Tracks
         let songIndexOverall = 0
 
-        setlist.sets.set.forEach((setItem: any) => {
+        setlist.sets.set.forEach((setItem: any, setIndex: number) => {
             setItem.song.forEach((songItem: any, songIndex: number) => {
                 // TODO: Key by setlist ID?
                 this.setlistTracks.push({
@@ -152,9 +156,16 @@ class SetlistUpdater {
                     // See these following setlist IDs: 43d6e773 53d7a32d 43de0fcf 43de0fcf
                     name: songItem.name === '' ? null : songItem.name,
                     tape: songItem.tape !== undefined,
-                    set_number: setItem.encore ?? 0,
+                    cover: songItem.cover ? JSON.stringify(songItem.cover) : null,
+                    with: songItem.with ? JSON.stringify(songItem.with) : null,
                     note: songItem.info ?? null,
-                    order_number: songIndexOverall
+                    order_number: songIndexOverall,
+                    // Only set name for first track in set
+                    set_name: setItem.name && songIndex === 0 ? setItem.name : null,
+                    // Set number is different from encore number, setlists without encore but multiple sets can exist
+                    // and encore property may not be always present. See setlist ID: 5bd0db0c
+                    set_number: setIndex,
+                    encore: setItem.encore ?? null
                 })
 
                 songIndexOverall++

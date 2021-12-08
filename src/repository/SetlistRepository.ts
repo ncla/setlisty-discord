@@ -1,5 +1,5 @@
 import {Setlist} from "../helpers/setlist";
-import {SetlistDbInterface, SetlistOptions, Track, Venue} from "../types/setlist";
+import {SetlistDbInterface, SetlistOptions, Track, TrackArtist, Venue} from "../types/setlist";
 import {Knex} from "knex";
 
 export class SetlistRepository {
@@ -29,6 +29,20 @@ export class SetlistRepository {
             .where({setlist_id: setlistId})
             .orderBy('order_number', 'asc')
 
+        tracksDb.map((track: Track) => {
+            if (track.with !== null && typeof track.with === "string") {
+                track.with = <TrackArtist>JSON.parse(track.with)
+            }
+
+            if (track.cover !== null && typeof track.cover === "string") {
+                track.cover = <TrackArtist>JSON.parse(track.cover)
+            }
+
+            return track
+        })
+
+        // console.log(tracksDb)
+
         return new Setlist(<SetlistOptions>{
             id: setlist.id,
             date: setlist.date,
@@ -36,7 +50,12 @@ export class SetlistRepository {
             tracks: tracksDb,
             event_id: setlist.event_id,
             event_name: setlist.event_name,
-            venue: venueObj
+            venue: venueObj,
+            note: setlist.note,
+            tour_name: setlist.tour_name,
+            last_revision: setlist.last_revision,
+            created_at: setlist.created_at,
+            updated_at: setlist.updated_at
         })
     }
 

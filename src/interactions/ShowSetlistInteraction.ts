@@ -1,10 +1,10 @@
-import {CommandInteraction, InteractionReplyOptions, MessageEmbed} from "discord.js";
+import {CommandInteraction, InteractionReplyOptions} from "discord.js";
 import SetlistFinder from "../services/SetlistFinder";
-import {Setlist} from "../helpers/setlist";
 import {mustContainStringParameter, onlyAvailableThroughGuildsConcern} from "../helpers/interaction_guards";
 import {ArtistNotFoundException, SetlistNotFoundException} from "../helpers/exceptions";
+import BaseShowSetlistInteraction from "./base/BaseShowSetlistInteraction";
 
-export class ShowSetlistInteraction {
+export class ShowSetlistInteraction extends BaseShowSetlistInteraction {
     protected interaction: CommandInteraction
     protected setlistFinder: SetlistFinder
 
@@ -14,6 +14,7 @@ export class ShowSetlistInteraction {
     ]
 
     constructor(interaction: CommandInteraction, setlistFinder: SetlistFinder) {
+        super();
         this.interaction = interaction;
         this.setlistFinder = setlistFinder
     }
@@ -61,18 +62,6 @@ export class ShowSetlistInteraction {
             return 'No setlist was found!'
         } else {
             throw err
-        }
-    }
-
-    private static buildSetlistReply(setlist: Setlist): InteractionReplyOptions {
-        return {
-            embeds: [
-                new MessageEmbed()
-                    .setTitle(setlist.getLocationAndDateText())
-                    .setURL(setlist.url)
-                    .setColor(0xff0000)
-                    .setDescription(setlist.getTrackListText())
-            ]
         }
     }
 }

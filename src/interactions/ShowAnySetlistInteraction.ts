@@ -1,12 +1,12 @@
-import {CommandInteraction, InteractionReplyOptions, MessageEmbed} from "discord.js";
+import {CommandInteraction, InteractionReplyOptions} from "discord.js";
 import SetlistUpdater from "../setlist-updater";
-import {Setlist} from "../helpers/setlist";
 import {SetlistRepository} from "../repository/SetlistRepository";
 import SetlistFinderWeb from "../services/SetlistFinderWeb";
 import {mustContainStringParameter, onlyAvailableThroughGuildsConcern} from "../helpers/interaction_guards";
 import {SetlistNotFoundException} from "../helpers/exceptions";
+import BaseShowSetlistInteraction from "./base/BaseShowSetlistInteraction";
 
-export class ShowAnySetlistInteraction {
+export class ShowAnySetlistInteraction extends BaseShowSetlistInteraction {
     protected interaction: CommandInteraction
     private setlistUpdator: SetlistUpdater;
     private setlistRepository: SetlistRepository;
@@ -23,6 +23,7 @@ export class ShowAnySetlistInteraction {
         setlistUpdator: SetlistUpdater,
         setlistRepository: SetlistRepository,
     ) {
+        super();
         this.interaction = interaction;
         this.setlistWebFinder = setlistWebFinder
         this.setlistUpdator = setlistUpdator;
@@ -87,17 +88,5 @@ export class ShowAnySetlistInteraction {
 
     private getQuery(): string {
         return this.interaction.options.getString('query') as string
-    }
-
-    private static buildSetlistReply(setlist: Setlist): InteractionReplyOptions {
-        return {
-            embeds: [
-                new MessageEmbed()
-                    .setTitle(setlist.getLocationAndDateText())
-                    .setURL(setlist.url)
-                    .setColor(0xff0000)
-                    .setDescription(setlist.getTrackListText())
-            ]
-        }
     }
 }
