@@ -1,10 +1,12 @@
-import {SetlistInterface, SetlistOptions, Track, Venue} from '../types/setlist';
+import {Artist, SetlistInterface, SetlistOptions, Track, Venue} from '../types/setlist';
 import dayjs from "dayjs";
 
 export class Setlist implements SetlistInterface {
+    // todo: all properties here are nullable, which is not true
     id!: string;
     date!: string;
     url!: string;
+    artist!: Artist;
     tracks!: Array<Track>;
     venue!: Venue;
     event_id!: string;
@@ -61,8 +63,12 @@ export class Setlist implements SetlistInterface {
         return `${dayjs(this.date).format('YYYY-MM-DD')}`
     }
 
-    public getLocationAndDateText (): string {
-        return `${this.getFullLocationText()} | ${this.getDateText()}`
+    public getArtistTextForTitle(): string {
+        return `${this.artist.artist_name} at`
+    }
+
+    public getSetlistTitle (): string {
+        return `${this.getArtistTextForTitle()} ${this.getFullLocationText()} | ${this.getDateText()}`
     }
 
     public getAutocompleteChoiceTitle(): string {

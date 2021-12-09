@@ -1,5 +1,5 @@
 import {Setlist} from "../helpers/setlist";
-import {SetlistDbInterface, SetlistOptions, Track, TrackArtist, Venue} from "../types/setlist";
+import {Artist, SetlistDbInterface, SetlistOptions, Track, TrackArtist, Venue} from "../types/setlist";
 import {Knex} from "knex";
 
 export class SetlistRepository {
@@ -15,6 +15,8 @@ export class SetlistRepository {
         if (!setlist) {
             throw Error('Setlist not found')
         }
+
+        let artist = await this.knexClient<Artist>('artists').where({id: setlist.artist_id}).first()
 
         let venue = JSON.parse(setlist.venue)
 
@@ -45,6 +47,7 @@ export class SetlistRepository {
             id: setlist.id,
             date: setlist.date,
             url: setlist.url,
+            artist: artist,
             tracks: tracksDb,
             event_id: setlist.event_id,
             event_name: setlist.event_name,

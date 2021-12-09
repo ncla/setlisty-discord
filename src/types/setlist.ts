@@ -1,5 +1,6 @@
 export interface SetlistDbInterface {
     id: string,
+    artist_id: number,
     date: string,
     url: string,
     event_id: string|null,
@@ -14,6 +15,12 @@ export interface SetlistDbInterface {
     last_revision?: string,
     created_at?: string,
     updated_at?: string,
+}
+
+export interface Artist {
+    id: number,
+    musicbrainz_id: string,
+    artist_name: string
 }
 
 export interface Track {
@@ -64,6 +71,7 @@ export interface SetlistOptions {
     id: string,
     date: string,
     url: string,
+    artist: Artist,
     tracks: Array<Track>,
     venue: Venue,
     event_id: string|null,

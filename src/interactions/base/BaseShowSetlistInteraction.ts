@@ -6,7 +6,7 @@ import {MessageButtonStyles} from "discord.js/typings/enums";
 export default class BaseShowSetlistInteraction {
     protected static buildSetlistReply(setlist: Setlist): InteractionReplyOptions {
         let messageEmbed = new MessageEmbed()
-            .setTitle(setlist.getLocationAndDateText())
+            .setTitle(setlist.getSetlistTitle())
             .setURL(setlist.url)
             .setColor('#3f92a6')
             .setDescription(setlist.getTrackListText())
