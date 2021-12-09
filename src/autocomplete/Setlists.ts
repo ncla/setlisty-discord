@@ -1,6 +1,6 @@
 import {AutocompleteInteraction} from "discord.js";
 import knexClient from "../helpers/knexClient";
-import {truncateString} from "../helpers";
+import {filterAndBuildSearchMatchAgainstQuery, truncateString} from "../helpers";
 import {SetlistRepository} from "../repository/SetlistRepository";
 
 export class AutocompleteSetlists {
@@ -39,14 +39,11 @@ export class AutocompleteSetlists {
             return await this.interaction.respond([]);
         }
 
-        const againstWithWildcard = `(${userQuery.split(' ').map(word => word + '*').join(' ')})`
-        const againstNormal = `("${userQuery}")`
-
-        const againstBinding = `${againstWithWildcard} ${againstNormal}`;
+        const filteredQuery = filterAndBuildSearchMatchAgainstQuery(userQuery)
 
         const setlists = await knexClient('setlists')
             .select('id', 'searchable_full_name')
-            .select(knexClient.raw('MATCH (searchable_full_name) AGAINST (? IN BOOLEAN MODE) as score', [againstBinding]))
+            .select(knexClient.raw('MATCH (searchable_full_name) AGAINST (? IN BOOLEAN MODE) as score', [filteredQuery]))
             .where({
                 artist_id: artistDb.artist_id
             })
