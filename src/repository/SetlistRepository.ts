@@ -41,8 +41,6 @@ export class SetlistRepository {
             return track
         })
 
-        // console.log(tracksDb)
-
         return new Setlist(<SetlistOptions>{
             id: setlist.id,
             date: setlist.date,

@@ -4,6 +4,7 @@ import {SetlistfmAPIRequestClient} from "./request/SetlistFmAPI";
 import {ArtistRepository} from "./repository/ArtistRepository";
 import {Knex} from "knex";
 import dayjs from "dayjs";
+import { now } from './helpers/knexClient';
 
 class SetlistUpdater {
     protected setlistEntries: any[] = []
@@ -208,6 +209,7 @@ class SetlistUpdater {
                 await this.knexClient('setlists')
                     .where({id: setlist.id})
                     .update(setlist)
+                    .update('updated_at', now)
             } else {
                 console.log(`Inserting new setlist with ID ${setlist.id}`)
 
