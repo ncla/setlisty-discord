@@ -2,7 +2,7 @@ import {Artist, SetlistInterface, SetlistOptions, Track, Venue} from '../types/s
 import dayjs from "dayjs";
 
 export class Setlist implements SetlistInterface {
-    // todo: all properties here are nullable, which is not true
+    // todo: all properties here are set to nullable, which is not exactly true, some properties are always present
     id!: string;
     date!: string;
     url!: string;
