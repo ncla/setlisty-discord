@@ -1,4 +1,5 @@
 import { Knex } from "knex";
+import { filterAndBuildSearchMatchAgainstQuery } from "../helpers";
 import { Setlist } from "../helpers/setlist";
 import { Artist, SetlistDbInterface, SetlistOptions, Track, TrackArtist, Venue } from "../types/setlist";
 
@@ -87,14 +88,11 @@ export class SetlistRepository {
     }
 
     async getSetlistBySearchQuery(query: string, artistId: number): Promise<Setlist | undefined> {
-        const againstWithWildcard = `(${query.split(' ').map(word => word + '*').join(' ')})`
-        const againstNormal = `("${query}")`
-
-        const againstBinding = `${againstWithWildcard} ${againstNormal}`;
+        const filteredQuery = filterAndBuildSearchMatchAgainstQuery(query)
 
         const setlist = await this.knexClient('setlists')
             .select('id')
-            .select(this.knexClient.raw('MATCH (searchable_full_name) AGAINST (? IN BOOLEAN MODE) as score', [againstBinding]))
+            .select(this.knexClient.raw('MATCH (searchable_full_name) AGAINST (? IN BOOLEAN MODE) as score', [filteredQuery]))
             .where({
                 artist_id: artistId
             })
