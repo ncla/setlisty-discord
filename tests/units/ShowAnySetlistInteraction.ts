@@ -102,7 +102,7 @@ describe('ShowAnySetlistInteraction', function () {
         const expectedSetlistUrl = 'https://www.setlist.fm/setlist/muse/2017/little-johns-farm-reading-england-43e29f4b.html';
         const expectedTracklistText = 'some really cool setlist text';
 
-        setlistMock.getLocationAndDateText.returns(expectedLocationAndDateText)
+        setlistMock.getSetlistTitle.returns(expectedLocationAndDateText)
         setlistMock.url = expectedSetlistUrl
         setlistMock.getTrackListText.returns(expectedTracklistText)
 

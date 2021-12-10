@@ -1,6 +1,6 @@
-import {Setlist} from "../helpers/setlist";
-import {Artist, SetlistDbInterface, SetlistOptions, Track, TrackArtist, Venue} from "../types/setlist";
-import {Knex} from "knex";
+import { Knex } from "knex";
+import { Setlist } from "../helpers/setlist";
+import { Artist, SetlistDbInterface, SetlistOptions, Track, TrackArtist, Venue } from "../types/setlist";
 
 export class SetlistRepository {
     private knexClient;
@@ -66,6 +66,24 @@ export class SetlistRepository {
         } catch (e) {
             return undefined
         }
+    }
+
+    async checkIfSetlistExistsBySetlistId(id: string): Promise<boolean> {
+        const exists = await this.knexClient('setlists')
+            .where({id: id}).then(rows => rows.length)
+
+        return exists > 0
+    }
+
+    async updateSetlistBySetlistId(setlistData: any, setlistId: string): Promise<void> {
+        await this.knexClient('setlists')
+            .where({id: setlistId})
+            .update(setlistData)
+            .update('updated_at', this.knexClient.fn.now())
+    }
+
+    async insertSetlist(setlistData: any): Promise<void> {
+        await this.knexClient('setlists').insert(setlistData)
     }
 
     async getSetlistBySearchQuery(query: string, artistId: number): Promise<Setlist | undefined> {

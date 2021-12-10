@@ -101,7 +101,7 @@ describe('ShowSetlistInteraction', function () {
 
             const setlistMock = sinon.createStubInstance(Setlist)
 
-            setlistMock.getLocationAndDateText.returns(expectedLocationAndDateText)
+            setlistMock.getSetlistTitle.returns(expectedLocationAndDateText)
             setlistMock.url = expectedSetlistUrl
             setlistMock.getTrackListText.returns(expectedTracklistText)
 
