@@ -200,12 +200,12 @@ class SetlistUpdater {
 
             console.log("ARIST ID DB AFTER:", setlist.artist_id)
 
-            const existing = await this.setlistRepository.checkIfSetlistExistsBySetlistId(setlist.id)
+            const setlistExists = await this.setlistRepository.checkIfSetlistExistsBySetlistId(setlist.id)
 
-            console.log(existing)
-            console.log(`Setlist exists: ${existing ? 'true' : 'false'}`)
+            console.log(setlistExists)
+            console.log(`Setlist exists: ${setlistExists ? 'true' : 'false'}`)
 
-            if (existing) {
+            if (setlistExists) {
                 console.log(`Updating existing setlist with ID ${setlist.id}`)
 
                 await this.setlistRepository.updateSetlistBySetlistId(setlist, setlist.id)
@@ -223,7 +223,7 @@ class SetlistUpdater {
 
             await this.trackRepository.deleteAllTracksBySetlistId(setlistId)
 
-            // console.log(`Inserting new setlist tracks for setlist ID ${setlistId}`)
+            console.log(`Inserting new setlist tracks for setlist ID ${setlistId}`)
 
             await this.trackRepository.insertTracks(setlistTracks)
         }
