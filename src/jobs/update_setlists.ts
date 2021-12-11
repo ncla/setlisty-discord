@@ -2,8 +2,8 @@ import SetlistUpdater from "../setlist-updater";
 import knexClient, {now} from "../helpers/knexClient";
 import {SetlistfmAPIRequestClient} from "../request/SetlistFmAPI";
 import {ArtistRepository} from "../repository/ArtistRepository";
-import { SetlistRepository } from "src/repository/SetlistRepository";
-import { TrackRepository } from "src/repository/TrackRepository";
+import { SetlistRepository } from "../repository/SetlistRepository";
+import { TrackRepository } from "../repository/TrackRepository";
 
 async function getFirstNeverUpdatedArtist() {
     return await knexClient('artists')
