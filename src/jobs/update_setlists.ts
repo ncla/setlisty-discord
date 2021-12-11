@@ -2,6 +2,8 @@ import SetlistUpdater from "../setlist-updater";
 import knexClient, {now} from "../helpers/knexClient";
 import {SetlistfmAPIRequestClient} from "../request/SetlistFmAPI";
 import {ArtistRepository} from "../repository/ArtistRepository";
+import { SetlistRepository } from "src/repository/SetlistRepository";
+import { TrackRepository } from "src/repository/TrackRepository";
 
 async function getFirstNeverUpdatedArtist() {
     return await knexClient('artists')
@@ -66,7 +68,8 @@ async function execute() {
         let updater = new SetlistUpdater(
             new SetlistfmAPIRequestClient(),
             new ArtistRepository(knexClient),
-            knexClient
+            new SetlistRepository(knexClient),
+            new TrackRepository(knexClient)
         );
         await updater.runArtistUpdate(artist.musicbrainz_id)
     } catch (err) {
