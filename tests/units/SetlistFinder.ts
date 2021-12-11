@@ -1,11 +1,12 @@
 import SetlistFinder from "../../src/services/SetlistFinder";
 import {ArtistRepository} from "../../src/repository/ArtistRepository";
 import {SetlistRepository} from "../../src/repository/SetlistRepository";
-import {Setlist} from "../../dist/helpers/setlist";
+import {Setlist} from "../../src/helpers/setlist";
 
 import chai, {expect} from "chai";
 import ChaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
+import { ArtistNotFoundException, SetlistNotFoundException } from "../../src/helpers/exceptions";
 
 chai.use(ChaiAsPromised);
 
@@ -21,7 +22,7 @@ describe('SetlistFinder', function () {
 
         let promise = command.invoke(guildId, "doesntmatter")
 
-        await expect(promise).to.eventually.be.rejectedWith(SetlistFinder.ArtistNotFoundException)
+        await expect(promise).to.eventually.be.rejectedWith(ArtistNotFoundException)
         expect(mockArtistRepo.getArtistIdForGuildId.calledOnce).to.be.true
     })
 
@@ -38,7 +39,7 @@ describe('SetlistFinder', function () {
             let command = new SetlistFinder(mockArtistRepo, mockSetlistRepo)
             let promise = command.invoke('111', `id:${passedSetlistId}`)
 
-            await expect(promise).to.eventually.be.rejectedWith(SetlistFinder.SetlistNotFoundException)
+            await expect(promise).to.eventually.be.rejectedWith(SetlistNotFoundException)
 
             sinon.assert.calledOnceWithExactly(mockSetlistRepo.getSetlistById, passedSetlistId)
         })
@@ -75,7 +76,7 @@ describe('SetlistFinder', function () {
             let command = new SetlistFinder(mockArtistRepo, mockSetlistRepo);
             let promise = command.invoke('111', searchQuery);
 
-            await expect(promise).to.be.rejectedWith(SetlistFinder.SetlistNotFoundException);
+            await expect(promise).to.be.rejectedWith(SetlistNotFoundException);
             sinon.assert.calledOnceWithExactly(mockSetlistRepo.getSetlistBySearchQuery, searchQuery, 555);
         })
 

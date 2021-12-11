@@ -1,7 +1,7 @@
-import {Setlist} from "../helpers/setlist";
-import {SetlistDbInterface, SetlistOptions, Track, Venue} from "../types/setlist";
-import {Knex} from "knex";
+import { Knex } from "knex";
 import { filterAndBuildSearchMatchAgainstQuery } from "../helpers";
+import { Setlist } from "../helpers/setlist";
+import { Artist, SetlistDbInterface, SetlistOptions, Track, TrackArtist, Venue } from "../types/setlist";
 
 export class SetlistRepository {
     private knexClient;
@@ -17,6 +17,8 @@ export class SetlistRepository {
             throw Error('Setlist not found')
         }
 
+        let artist = await this.knexClient<Artist>('artists').where({id: setlist.artist_id}).first()
+
         let venue = JSON.parse(setlist.venue)
 
         let venueObj = <Venue>{
@@ -30,14 +32,32 @@ export class SetlistRepository {
             .where({setlist_id: setlistId})
             .orderBy('order_number', 'asc')
 
+        tracksDb.map((track: Track) => {
+            if (track.with !== null && typeof track.with === "string") {
+                track.with = <TrackArtist>JSON.parse(track.with)
+            }
+
+            if (track.cover !== null && typeof track.cover === "string") {
+                track.cover = <TrackArtist>JSON.parse(track.cover)
+            }
+
+            return track
+        })
+
         return new Setlist(<SetlistOptions>{
             id: setlist.id,
             date: setlist.date,
             url: setlist.url,
+            artist: artist,
             tracks: tracksDb,
             event_id: setlist.event_id,
             event_name: setlist.event_name,
-            venue: venueObj
+            venue: venueObj,
+            note: setlist.note,
+            tour_name: setlist.tour_name,
+            last_revision: setlist.last_revision,
+            created_at: setlist.created_at,
+            updated_at: setlist.updated_at
         })
     }
 
@@ -47,6 +67,24 @@ export class SetlistRepository {
         } catch (e) {
             return undefined
         }
+    }
+
+    async checkIfSetlistExistsBySetlistId(id: string): Promise<boolean> {
+        const exists = await this.knexClient('setlists')
+            .where({id: id}).then(rows => rows.length)
+
+        return exists > 0
+    }
+
+    async updateSetlistBySetlistId(setlistData: any, setlistId: string): Promise<void> {
+        await this.knexClient('setlists')
+            .where({id: setlistId})
+            .update(setlistData)
+            .update('updated_at', this.knexClient.fn.now())
+    }
+
+    async insertSetlist(setlistData: any): Promise<void> {
+        await this.knexClient('setlists').insert(setlistData)
     }
 
     async getSetlistBySearchQuery(query: string, artistId: number): Promise<Setlist | undefined> {

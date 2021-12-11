@@ -2,7 +2,9 @@ import {AxiosResponse} from 'axios';
 import {groupBy} from "./helpers";
 import {SetlistfmAPIRequestClient} from "./request/SetlistFmAPI";
 import {ArtistRepository} from "./repository/ArtistRepository";
-import {Knex} from "knex";
+import dayjs from "dayjs";
+import { SetlistRepository } from './repository/SetlistRepository';
+import { TrackRepository } from './repository/TrackRepository';
 
 class SetlistUpdater {
     protected setlistEntries: any[] = []
@@ -15,16 +17,19 @@ class SetlistUpdater {
 
     private setlistRequestClient: SetlistfmAPIRequestClient
     private artistRepository: ArtistRepository;
-    private knexClient: Knex;
+    private setlistRepository: SetlistRepository;
+    private trackRepository: TrackRepository;
 
     public constructor(
         setlistRequestClient: SetlistfmAPIRequestClient,
         artistRepository: ArtistRepository,
-        knexClient: Knex
+        setlistRepository: SetlistRepository,
+        trackRepository: TrackRepository,
     ) {
         this.setlistRequestClient = setlistRequestClient;
         this.artistRepository = artistRepository;
-        this.knexClient = knexClient;
+        this.setlistRepository = setlistRepository;
+        this.trackRepository = trackRepository;
     }
 
     public async runArtistUpdate(musicbrainzId: string) {
@@ -136,13 +141,16 @@ class SetlistUpdater {
             city_name: setlist.venue.city.name,
             state_name: setlist.venue.city.state,
             country_name: setlist.venue.city.country.name,
-            url: setlist.url
+            url: setlist.url,
+            note: setlist.info ?? null,
+            tour_name: setlist?.tour?.name ?? null,
+            last_revision: setlist?.lastUpdated ? dayjs(setlist.lastUpdated).format('YYYY-MM-DD HH:mm:ss') : null
         })
 
         // Tracks
         let songIndexOverall = 0
 
-        setlist.sets.set.forEach((setItem: any) => {
+        setlist.sets.set.forEach((setItem: any, setIndex: number) => {
             setItem.song.forEach((songItem: any, songIndex: number) => {
                 // TODO: Key by setlist ID?
                 this.setlistTracks.push({
@@ -152,9 +160,16 @@ class SetlistUpdater {
                     // See these following setlist IDs: 43d6e773 53d7a32d 43de0fcf 43de0fcf
                     name: songItem.name === '' ? null : songItem.name,
                     tape: songItem.tape !== undefined,
-                    set_number: setItem.encore ?? 0,
+                    cover: songItem.cover ? JSON.stringify(songItem.cover) : null,
+                    with: songItem.with ? JSON.stringify(songItem.with) : null,
                     note: songItem.info ?? null,
-                    order_number: songIndexOverall
+                    order_number: songIndexOverall,
+                    // Only set name for first track in set
+                    set_name: setItem.name && songIndex === 0 ? setItem.name : null,
+                    // Set number is different from encore number, setlists without encore but multiple sets can exist
+                    // and encore property may not be always present. See setlist ID: 5bd0db0c
+                    set_number: setIndex,
+                    encore: setItem.encore ?? null
                 })
 
                 songIndexOverall++
@@ -185,22 +200,19 @@ class SetlistUpdater {
 
             console.log("ARIST ID DB AFTER:", setlist.artist_id)
 
-            const existing = await this.knexClient('setlists')
-                .where({id: setlist.id}).then(rows => rows.length)
+            const setlistExists = await this.setlistRepository.checkIfSetlistExistsBySetlistId(setlist.id)
 
-            console.log(existing)
-            console.log(`Setlist exists: ${existing ? 'true' : 'false'}`)
+            console.log(setlistExists)
+            console.log(`Setlist exists: ${setlistExists ? 'true' : 'false'}`)
 
-            if (existing) {
+            if (setlistExists) {
                 console.log(`Updating existing setlist with ID ${setlist.id}`)
 
-                await this.knexClient('setlists')
-                    .where({id: setlist.id})
-                    .update(setlist)
+                await this.setlistRepository.updateSetlistBySetlistId(setlist, setlist.id)
             } else {
                 console.log(`Inserting new setlist with ID ${setlist.id}`)
 
-                await this.knexClient('setlists').insert(setlist)
+                await this.setlistRepository.insertSetlist(setlist)
             }
         }
         // Grouping here does not guarantee that same track won't be inserted multiple times
@@ -209,14 +221,11 @@ class SetlistUpdater {
         for (const [setlistId, setlistTracks] of Object.entries(tracksGroupedBySetlistId)) {
             console.log(`Wiping setlist tracks for setlist ID ${setlistId}`)
 
-            await this.knexClient('setlist_tracks')
-                .where('setlist_id', setlistId)
-                .del()
+            await this.trackRepository.deleteAllTracksBySetlistId(setlistId)
 
             console.log(`Inserting new setlist tracks for setlist ID ${setlistId}`)
 
-            await this.knexClient('setlist_tracks')
-                .insert(setlistTracks)
+            await this.trackRepository.insertTracks(setlistTracks)
         }
 
         return true

@@ -18,6 +18,7 @@ import SetlistUpdater from "./setlist-updater";
 import SetlistFinderWeb from "./services/SetlistFinderWeb";
 import {SetlistFmWebSearchResultsParser} from "./parsers/SetlistFmWebSearchResults";
 import {InteractionGuardException} from "./helpers/exceptions";
+import { TrackRepository } from "./repository/TrackRepository";
 
 // See: http://knexjs.org/#typescript-support
 // declare module 'knex/types/tables' {
@@ -47,6 +48,7 @@ const setlistFmWebSearchResultsParser = new SetlistFmWebSearchResultsParser()
 const setlistFinderWeb = new SetlistFinderWeb(setlistRequestorWeb, setlistFmWebSearchResultsParser)
 const artistRepo = new ArtistRepository(knexClient)
 const setlistRepo = new SetlistRepository(knexClient)
+const trackRepo = new TrackRepository(knexClient)
 const setlistFinder = new SetlistFinder(
     new ArtistRepository(knexClient),
     setlistRepo
@@ -70,6 +72,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                     return await interaction.reply(err.options)
                 }
 
+                console.log(err)
                 return await interaction.reply('Encountered unexpected exception')
             }
         }
@@ -78,7 +81,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             return new ShowAnySetlistInteraction(
                 interaction,
                 setlistFinderWeb,
-                new SetlistUpdater(setlistRequestorApi, artistRepo, knexClient),
+                new SetlistUpdater(setlistRequestorApi, artistRepo, setlistRepo, trackRepo),
                 setlistRepo
             ).invoke()
         }

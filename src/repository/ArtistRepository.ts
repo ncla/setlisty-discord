@@ -1,7 +1,9 @@
+import { Knex } from "knex";
+
 export class ArtistRepository {
     private knexClient;
 
-    constructor(knexClient: any) {
+    constructor(knexClient: Knex) {
         this.knexClient = knexClient;
     }
 
