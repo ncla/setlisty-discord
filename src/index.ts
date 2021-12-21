@@ -19,6 +19,7 @@ import SetlistFinderWeb from "./services/SetlistFinderWeb";
 import {SetlistFmWebSearchResultsParser} from "./parsers/SetlistFmWebSearchResults";
 import {InteractionGuardException} from "./helpers/exceptions";
 import { TrackRepository } from "./repository/TrackRepository";
+import { LinkAccount } from "./interactions/LinkAccount";
 
 // See: http://knexjs.org/#typescript-support
 // declare module 'knex/types/tables' {
@@ -84,6 +85,10 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 new SetlistUpdater(setlistRequestorApi, artistRepo, setlistRepo, trackRepo),
                 setlistRepo
             ).invoke()
+        }
+
+        if (interaction.commandName === 'link-account') {
+            return new LinkAccount(interaction, setlistRequestorApi).invoke()
         }
 
         if (interaction.commandName === 'set-artist') {
