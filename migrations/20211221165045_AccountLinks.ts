@@ -10,10 +10,10 @@ export async function up(knex: Knex): Promise<void> {
     await knex.schema.createTable('setlist_attendees', (table) => {
         table.increments('id')
         table.string('setlist_id', 50)
-        table.integer('discord_user_id').notNullable().unsigned()
+        table.integer('user_id').notNullable().unsigned()
 
         table
-            .foreign('discord_user_id')
+            .foreign('user_id')
             .references('id')
             .inTable('users')
 
@@ -25,6 +25,6 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
-    await knex.schema.dropTable('discord_users')
     await knex.schema.dropTable('setlist_attendees')
+    await knex.schema.dropTable('users')
 }

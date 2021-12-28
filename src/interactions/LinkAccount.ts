@@ -7,16 +7,25 @@
  * 3. fetch their profile again, see user ID, save.
  * 4. fetch the setlist data for gigs they have attended (do this already instead of later )
  * 5. if running the command again and user is linked, say so
+ * 6. check if someone hasnt already set that username
+ * 
+ * reset attended gigs when re-linking an account
  */
 
 import { CommandInteraction, MessageEmbed } from "discord.js";
+import { UserRepository } from "src/repository/UserRepository";
 import { SetlistfmAPIRequestClient } from "src/request/SetlistFmAPI";
+import SetlistUpdater from "src/setlist-updater";
 import { mustContainStringParameter, onlyAvailableThroughGuildsConcern } from "../helpers/interaction_guards";
- 
+// this is kinda poopy, request logic in discord command class
+import axios from 'axios';
+
 export class LinkAccount {
     protected interaction: CommandInteraction
 
     protected setlistFmApiRequestClient: SetlistfmAPIRequestClient
+    protected userRepository: UserRepository;
+    setlistUpdater: SetlistUpdater;
 
     protected interactionGuards: Array<Function> = [
         onlyAvailableThroughGuildsConcern,
@@ -25,10 +34,14 @@ export class LinkAccount {
 
     constructor(
         interaction: CommandInteraction,
-        setlistFmApiRequestClient: SetlistfmAPIRequestClient
+        setlistFmApiRequestClient: SetlistfmAPIRequestClient,
+        userRepository: UserRepository,
+        setlistUpdater: SetlistUpdater
     ) {
         this.interaction = interaction;
         this.setlistFmApiRequestClient = setlistFmApiRequestClient
+        this.userRepository = userRepository
+        this.setlistUpdater = setlistUpdater
     }
 
     protected async runInteractionGuards() {
@@ -44,21 +57,107 @@ export class LinkAccount {
 
         const discordUserId = this.interaction.user.id
 
-        const response = await this.setlistFmApiRequestClient.fetchUser(username)
+        const isAlreadyLinked = await this.userRepository.getUserIdByDiscordUserId(discordUserId) !== undefined
 
-        // todo: no user found
+        if (isAlreadyLinked) {
+            return await this.replyAccountAlreadyLinkedToYou()
+        }
 
-        console.log(response.data)
+        const existingSetlistfmLinkedAccount = await this.userRepository.getDiscordUserIdBySetlistfmUsername(username)
+        const setlistfmAccountLinkedToSomeoneElse = existingSetlistfmLinkedAccount !== undefined && existingSetlistfmLinkedAccount.toString() !== discordUserId
+
+        if (setlistfmAccountLinkedToSomeoneElse) {
+            return await this.replyAccountAlreadyLinkedToSomeoneElse()
+        }
+
+        let response;
+
+        try {
+            response = await this.setlistFmApiRequestClient.fetchUser(username)
+        } catch (err) {
+            if (axios.isAxiosError(err) && err.response && err.response.status === 404) {
+                console.log(1)
+                return await this.replyAccountNotFound()
+            }
+        }
+
+        if (response === undefined) {
+            return await this.replyAccountNotFound()
+        }
 
         const stringToLookFor = `discord:${discordUserId}`
 
-        const stringExistsInAboutSection = response.data.about && response.data.about.indexOf(stringToLookFor) !== -1
+        const stringExistsInAboutSection = response.data.about !== undefined && response.data.about.indexOf(stringToLookFor) !== -1
 
-        console.log(stringExistsInAboutSection)
-
-        if (!stringExistsInAboutSection) {
-            await this.replyWithInstructions()
+        if (stringExistsInAboutSection === false) {
+            return await this.replyWithInstructions()
         }
+
+        this.userRepository.upsertUser(discordUserId, username)
+
+        // TODO: Move to jobs
+        const updatedSetlistIds = await this.setlistUpdater.runSingleUserUpdate(username)
+        console.log(updatedSetlistIds)
+
+        const userDbId = await this.userRepository.getUserIdByDiscordUserId(discordUserId)
+
+        if (userDbId === undefined) {
+            return; // todo
+        }
+
+        await this.userRepository.insertAttendedSetlistsForUser(userDbId, updatedSetlistIds)
+
+        return await this.replySuccess()
+    }
+
+    private async replyAccountAlreadyLinkedToSomeoneElse() {
+        let messageEmbed = new MessageEmbed()
+            .setColor('#3f92a6')
+            .setDescription(`
+                This setlist.fm username is already linked to another Discord account.
+                Only one Discord account can be linked to a single setlist.fm account.
+            `)
+
+        await this.interaction.reply(
+            {
+                embeds: [
+                    messageEmbed
+                ],
+            }
+        )
+    }
+
+    private async replyAccountAlreadyLinkedToYou() {
+        let messageEmbed = new MessageEmbed()
+            .setColor('#3f92a6')
+            .setDescription(`
+                Your Discord account is already linked to a setlist.fm account.
+                If you wish to unlink your account, please use the /unlink-account command.
+            `)
+
+        await this.interaction.reply(
+            {
+                embeds: [
+                    messageEmbed
+                ],
+            }
+        )
+    }
+
+    private async replyAccountNotFound() {
+        let messageEmbed = new MessageEmbed()
+            .setColor('#3f92a6')
+            .setDescription(`
+                No setlist.fm account was found with this username!
+            `)
+
+        await this.interaction.reply(
+            {
+                embeds: [
+                    messageEmbed
+                ],
+            }
+        )
     }
 
     private async replyWithInstructions() {
@@ -80,19 +179,22 @@ export class LinkAccount {
                 embeds: [
                     messageEmbed
                 ],
-                // components: [
-                //     new MessageActionRow()
-                //         .addComponents(
-                //             new MessageButton()
-                //                 .setLabel('View')
-                //                 .setURL(setlist.url)
-                //                 .setStyle(MessageButtonStyles.LINK),
-                //             new MessageButton()
-                //                 .setLabel('Edit')
-                //                 .setURL(`https://www.setlist.fm/edit?setlist=${setlist.id}&step=song`)
-                //                 .setStyle(MessageButtonStyles.LINK)
-                //         )
-                // ]
+            },
+        )
+    }
+
+    private async replySuccess() {
+        let messageEmbed = new MessageEmbed()
+            .setColor('#3f92a6')
+            .setDescription(`
+                You have successfully linked your Discord account to your Setlist.fm profile.
+            `)
+
+        await this.interaction.reply(
+            {
+                embeds: [
+                    messageEmbed
+                ],
             }
         )
     }

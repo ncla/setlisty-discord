@@ -38,4 +38,14 @@ export class SetlistfmAPIRequestClient {
     public async fetchUser(username: string): Promise<AxiosResponse<any>> {
         return await this.axios.get(`user/${username}`)
     }
+
+    public async fetchUserAttendedSetlists(userId: string, page?: number): Promise<AxiosResponse<any>> {
+        const requestConfig: AxiosRequestConfig = {
+            params: {
+                p: page
+            }
+        }
+
+        return await this.axios.get(`user/${userId}/attended`, requestConfig)
+    }
 }
