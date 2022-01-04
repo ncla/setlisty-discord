@@ -55,7 +55,11 @@ const commands = [
                 .setName('username')
                 .setDescription('Username on setlist.fm')
                 .setRequired(true)
-        ).toJSON()
+        ).toJSON(),
+    new SlashCommandBuilder()
+        .setName('unlink-account')
+        .setDescription('Unlink your Setlist.fm account from your current Discord account and delete associated data')
+        .toJSON()
 ]
 
 const rest = new REST({ version: '9' }).setToken(Config.discord.token);

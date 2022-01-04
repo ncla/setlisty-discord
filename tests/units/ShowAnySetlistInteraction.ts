@@ -2,7 +2,7 @@ import {ShowAnySetlistInteraction} from "../../src/interactions/ShowAnySetlistIn
 import sinon, {SinonStubbedInstance} from "sinon";
 import {CommandInteraction, CommandInteractionOptionResolver} from "discord.js";
 import SetlistFinderWeb from "../../src/services/SetlistFinderWeb";
-import SetlistUpdater from "../../src/setlist-updater";
+import SetlistUpdater from "../../src/services/SetlistUpdater";
 import {SetlistRepository} from "../../src/repository/SetlistRepository";
 import {expect} from "chai";
 import {Setlist} from "../../src/helpers/setlist";

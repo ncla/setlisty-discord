@@ -1,10 +1,10 @@
 import {AxiosResponse} from 'axios';
-import {groupBy} from "./helpers";
-import {SetlistfmAPIRequestClient} from "./request/SetlistFmAPI";
-import {ArtistRepository} from "./repository/ArtistRepository";
+import {groupBy} from "../helpers";
+import {SetlistfmAPIRequestClient} from "../request/SetlistFmAPI";
+import {ArtistRepository} from "../repository/ArtistRepository";
 import dayjs from "dayjs";
-import { SetlistRepository } from './repository/SetlistRepository';
-import { TrackRepository } from './repository/TrackRepository';
+import { SetlistRepository } from '../repository/SetlistRepository';
+import { TrackRepository } from '../repository/TrackRepository';
 
 class SetlistUpdater {
     protected setlistEntries: any[] = []

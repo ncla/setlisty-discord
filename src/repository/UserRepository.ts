@@ -18,22 +18,21 @@ export class UserRepository {
             .merge()
     }
 
+    async deleteUser(userId: number) {
+        return await this.knexClient('users')
+            .where('id', userId)
+            .del()
+    }
+
     async deleteAttendedSetlistsForUser(userId: number) {
-        await this.knexClient('setlist_attendees')
+        return await this.knexClient('setlist_attendees')
             .where('user_id', userId)
             .del()
     }
 
+    // todo: chunk?
     async insertAttendedSetlistsForUser(userId: number, setlistIds: string[]) {
-        console.log(
-            setlistIds.map(setlistId => {
-                return {
-                    user_id: userId,
-                    setlist_id: setlistId
-                }
-            })
-        )
-        await this.knexClient('setlist_attendees')
+        return await this.knexClient('setlist_attendees')
             .insert(
                 setlistIds.map(setlistId => {
                     return {

@@ -1,5 +1,5 @@
 import {CommandInteraction, InteractionReplyOptions} from "discord.js";
-import SetlistUpdater from "../setlist-updater";
+import SetlistUpdater from "../services/SetlistUpdater";
 import {SetlistRepository} from "../repository/SetlistRepository";
 import SetlistFinderWeb from "../services/SetlistFinderWeb";
 import {mustContainStringParameter, onlyAvailableThroughGuildsConcern} from "../helpers/interaction_guards";
@@ -58,6 +58,7 @@ export class ShowAnySetlistInteraction extends BaseShowSetlistInteraction {
             setlist = await this.getSetlist(setlistId)
         } catch (err) {
             if (err instanceof SetlistFinderWeb.NoSetlistsFoundException) {
+                // TODO: Fancier replies
                 return 'No search results were found!'
             } else if (err instanceof SetlistNotFoundException) {
                 return 'No setlist was found!'

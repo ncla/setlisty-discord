@@ -50,10 +50,12 @@
     "migrate": "yarn run knex migrate:latest",
     "rollback": "yarn run knex migrate:rollback",
     "remigrate": "yarn run rollback && yarn run migrate",
+    "reregister": "yarn tsc && node dist/delete_all_commands.js && node dist/deploy_commands.js",
     "start-docker": "cd docker && docker-compose up -d",
     "attach-bot": "docker exec -it setlist_bot sh",
     "attach-scraper": "docker exec -it setlist_scraper sh",
     "logs-bot": "docker logs -tf setlist_bot",
+    "logs-compiler": "docker logs -tf setlist_compiler",
     "logs-scraper": "docker logs -tf setlist_scraper",
     "test": "yarn mocha -r ts-node/register tests/**/*.ts",
     "tests": "yarn test"

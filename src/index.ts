@@ -14,13 +14,15 @@ import {AutocompleteArtists} from "./autocomplete/Artists";
 import {MusicbrainzRequestClient} from "./request/Musicbrainz";
 import {ShowAnySetlistInteraction} from "./interactions/ShowAnySetlistInteraction";
 import {SetlistfmWebRequestClient} from "./request/SetlistFmWeb";
-import SetlistUpdater from "./setlist-updater";
+import SetlistUpdater from "./services/SetlistUpdater";
 import SetlistFinderWeb from "./services/SetlistFinderWeb";
 import {SetlistFmWebSearchResultsParser} from "./parsers/SetlistFmWebSearchResults";
 import {InteractionGuardException} from "./helpers/exceptions";
 import { TrackRepository } from "./repository/TrackRepository";
 import { LinkAccount } from "./interactions/LinkAccount";
 import { UserRepository } from "./repository/UserRepository";
+import { UnlinkAccount } from "./interactions/UnlinkAccount";
+import { AccountManager } from "./services/AccountManager";
 
 // See: http://knexjs.org/#typescript-support
 // declare module 'knex/types/tables' {
@@ -57,6 +59,11 @@ const setlistFinder = new SetlistFinder(
     setlistRepo
 )
 const musicBrainzRequestClient = new MusicbrainzRequestClient()
+const accountManager = new AccountManager(
+    setlistRequestorApi,
+    userRepo,
+    new SetlistUpdater(setlistRequestorApi, artistRepo, setlistRepo, trackRepo)
+)
 
 client.on('ready', () => {
     console.log(`Client is logged in as ${client.user!.tag} and ready!`);
@@ -92,9 +99,14 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         if (interaction.commandName === 'link-account') {
             return new LinkAccount(
                 interaction,
-                setlistRequestorApi,
-                userRepo,
-                new SetlistUpdater(setlistRequestorApi, artistRepo, setlistRepo, trackRepo),
+                accountManager
+            ).invoke()
+        }
+
+        if (interaction.commandName === 'unlink-account') {
+            return new UnlinkAccount(
+                interaction,
+                accountManager
             ).invoke()
         }
 
