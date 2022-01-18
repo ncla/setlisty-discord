@@ -43,6 +43,7 @@ export class UserRepository {
             )
     }
 
+    // todo: return all data instead
     async getUserIdByDiscordUserId(discordUserId: string): Promise<number | undefined>  {
         const user = await this.knexClient('users')
             .select('id')
@@ -52,6 +53,7 @@ export class UserRepository {
         return user?.id
     }
 
+    // todo: return all data instead
     async getDiscordUserIdBySetlistfmUsername(setlistfmUsername: string): Promise<number | undefined> {
         const user = await this.knexClient('users')
             .select('discord_user_id')
@@ -59,5 +61,22 @@ export class UserRepository {
             .first()
 
         return user?.discord_user_id
+    }
+
+    async getUserById(id: number) {
+        return await this.knexClient('users').where({id: id}).first()
+    }
+
+    // todo: user job schedule repo? otherwise this repo can become too bloated with relations
+    // todo: do not schedule duplicate updates?
+    // mostly used from AccountManager
+    async scheduleUserUpdate(userId: number): Promise<number> {
+        const jobRecord = await this.knexClient('user_update_jobs')
+            .insert({
+                user_id: userId,
+                status: 'WAITING'
+            })
+
+        return jobRecord[0]
     }
 }

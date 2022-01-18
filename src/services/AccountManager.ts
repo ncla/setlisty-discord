@@ -13,13 +13,7 @@ export class NoSetlistfmAccountLinked extends TypedException {}
 export class AccountManager {
     protected setlistFmApiRequestClient: SetlistfmAPIRequestClient
     protected userRepository: UserRepository;
-    setlistUpdater: SetlistUpdater;
-
-    // static AlreadyLinkedToThisUser = class extends TypedException {}
-    // static AccountIsLinkedToSomeoneElse = class extends TypedException {}
-    // static SetlistFmAccountNotFound = class extends TypedException {}
-    // static MissingStringFromAboutSection = class extends TypedException {}
-    // static NoSetlistfmAccountLinked = class extends TypedException {}
+    protected setlistUpdater: SetlistUpdater;
 
     constructor(
         setlistFmApiRequestClient: SetlistfmAPIRequestClient,
@@ -65,20 +59,16 @@ export class AccountManager {
             throw new MissingStringFromAboutSection()
         }
 
-        this.userRepository.upsertUser(discordUserId, setlistFmUsername)
+        await this.userRepository.upsertUser(discordUserId, setlistFmUsername)
 
-        // TODO: Move to jobs, expensive and potentially long running task
-        const updatedSetlistIds = await this.setlistUpdater.runSingleUserUpdate(setlistFmUsername)
+        const userId = await this.userRepository.getUserIdByDiscordUserId(discordUserId)
 
-        const userDbId = await this.userRepository.getUserIdByDiscordUserId(discordUserId)
-
-        // This should not happen but just in case. If we can't find it then throw same exception as verification 
-        // has not been setup yet, letting them know to just retry.
-        if (userDbId === undefined) {
-            throw new MissingStringFromAboutSection()
+        // This should not happen but just in case. Typescript warns about potential undefined value.
+        if (userId === undefined) {
+            throw new Error('User ID is not available')
         }
 
-        await this.userRepository.insertAttendedSetlistsForUser(userDbId, updatedSetlistIds)
+        await this.userRepository.scheduleUserUpdate(userId)
     }
 
     public async unlinkAccount(discordUserId: string) {

@@ -16,18 +16,24 @@ import { CommandInteraction, InteractionReplyOptions, MessageEmbed } from "disco
 import TypedException from "../helpers/exceptions";
 import { AccountManager, MissingStringFromAboutSection } from "../services/AccountManager";
 import { mustContainStringParameter, onlyAvailableThroughGuildsConcern } from "../helpers/interaction_guards";
+import RefreshUser from "../services/RefreshUser";
 
 export class LinkAccount {
     protected interaction: CommandInteraction
     protected accountManager: AccountManager;
+    protected refreshUserService: RefreshUser;
 
     protected interactionGuards: Array<Function> = [
         onlyAvailableThroughGuildsConcern,
         mustContainStringParameter('username')
     ]
 
-    private alreadyLinkedToThisUserReply = `Your Discord account is already linked to a setlist.fm account.\nIf you wish to unlink your account, please use the /unlink-account command.`
-    private accountIsLinkedToSomeoneElseReply = `This setlist.fm username is already linked to another Discord account.\nOnly one Discord account can be linked to a single setlist.fm account.`
+    private alreadyLinkedToThisUserReply = 
+        `Your Discord account is already linked to a setlist.fm account.\n` + 
+        `If you wish to unlink your account, please use the /unlink-account command.`
+    private accountIsLinkedToSomeoneElseReply = 
+        `This setlist.fm username is already linked to another Discord account.` +
+        `\nOnly one Discord account can be linked to a single setlist.fm account.`
     private setlistFmAccountNotFoundReply = `No setlist.fm account was found with this username!`
     private successfulLinkReply = `You have successfully linked your Discord account to your Setlist.fm profile.`
 
@@ -40,9 +46,11 @@ export class LinkAccount {
     constructor(
         interaction: CommandInteraction,
         accountManager: AccountManager,
+        refreshUserService: RefreshUser,
     ) {
         this.interaction = interaction;
         this.accountManager = accountManager;
+        this.refreshUserService = refreshUserService;
     }
 
     protected async runInteractionGuards() {
@@ -99,7 +107,13 @@ export class LinkAccount {
     }
 
     private buildInstructionsReply(discordUserId: string) {
-        return `You have not linked your Discord account yet to your Setlist.fm profile. To link your account, please do the following steps:\n\n1. Log-in to your setlist.fm account <https://www.setlist.fm/signin>\n2. Navigate to "Settings" page of your profile <https://www.setlist.fm/settings>\n3. Scroll down to "About" section and copy paste this text anywhere in the "About" text box:\n\`\`\`discord:${discordUserId}\`\`\`\n5. Click the "Submit" button to save your changes.\n6. Re-run this command or press the "Verify" button of this message to verify your account link.\n`
+        return `You have not linked your Discord account yet to your Setlist.fm profile. To link your account, please do the following steps:\n\n` +
+        `1. Log-in to your setlist.fm account <https://www.setlist.fm/signin>\n` +
+        `2. Navigate to "Settings" page of your profile <https://www.setlist.fm/settings>\n` +
+        `3. Scroll down to "About" section and copy paste this text anywhere in the "About" text box:\n` +
+        `\`\`\`discord:${discordUserId}\`\`\`\n` +
+        `5. Click the "Submit" button to save your changes.\n` +
+        `6. Re-run this command or press the "Verify" button of this message to verify your account link.\n`
     }
 }
  
