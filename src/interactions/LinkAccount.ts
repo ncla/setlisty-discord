@@ -15,13 +15,13 @@ export class LinkAccount {
 
     private alreadyLinkedToThisUserReply = 
         `Your Discord account is already linked to a setlist.fm account.\n` + 
-        `If you wish to unlink your account, please use the /unlink-account command.`
+        `If you wish to unlink your account, please use the \`/account unlink\` command.`
     private accountIsLinkedToSomeoneElseReply = 
         `This setlist.fm username is already linked to another Discord account.` +
         `\nOnly one Discord account can be linked to a single setlist.fm account.`
     private setlistFmAccountNotFoundReply = `No setlist.fm account was found with this username!`
     private successfulLinkReply = 
-        `You have successfully linked your Discord account to your Setlist.fm profile.\n` +
+        `You have successfully linked your Discord account to your Setlist.fm account.\n` +
         `The text you added to your profile in previous account linking step can now be safely removed.`
 
     private exceptionReplyStrings: Record<string, string> = {
@@ -98,6 +98,6 @@ export class LinkAccount {
         `3. Scroll down to "About" section and copy paste this text anywhere in the "About" text box:\n` +
         `\`\`\`discord:${discordUserId}\`\`\`\n` +
         `5. Click the "Submit" button to save your changes.\n` +
-        `6. Re-run this command to verify your account link again.\n`
+        `6. Run this command again (\`/account link\`) to verify your account link.\n`
     }
 }

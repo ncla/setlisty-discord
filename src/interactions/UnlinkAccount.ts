@@ -11,7 +11,7 @@ export class UnlinkAccount {
         onlyAvailableThroughGuildsConcern
     ]
 
-    private noSetlistFmAccountLinkedReply: string = `You have no account to unlink!`
+    private noSetlistFmAccountLinkedReply: string = `You have no setlist.fm account to unlink from your Discord account!`
     private successfulUnlinkReply = `You have successfully unlinked your Discord account from your Setlist.fm profile.`
 
     private exceptionReplyStrings: Record<string, string> = {

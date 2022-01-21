@@ -24,6 +24,7 @@ export default class RefreshUser {
 
         const updatedSetlistIds = await this.setlistUpdater.runSingleUserUpdate(setlistfmUsername)
 
+        await this.userRepository.deleteAttendedSetlistsForUser(userId)
         await this.userRepository.insertAttendedSetlistsForUser(userId, updatedSetlistIds)
     }
 }
