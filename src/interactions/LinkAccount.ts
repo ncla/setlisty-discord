@@ -1,17 +1,3 @@
-/**
- * /link-account
- * 
- * 1. string option to specify the username of their account
- * 2. say that we have found your profile
- * 2. if a userID is not included on their profile, we give instructions on what to do. when they have done it, ask them to redo this command (or maybe add a button that will rerun the interaction)
- * 3. fetch their profile again, see user ID, save.
- * 4. fetch the setlist data for gigs they have attended (do this already instead of later )
- * 5. if running the command again and user is linked, say so
- * 6. check if someone hasnt already set that username
- * 
- * reset attended gigs when re-linking an account
- */
-
 import { CommandInteraction, InteractionReplyOptions, MessageEmbed } from "discord.js";
 import TypedException from "../helpers/exceptions";
 import { mustContainStringParameter, onlyAvailableThroughGuildsConcern } from "../helpers/interaction_guards";
@@ -34,7 +20,9 @@ export class LinkAccount {
         `This setlist.fm username is already linked to another Discord account.` +
         `\nOnly one Discord account can be linked to a single setlist.fm account.`
     private setlistFmAccountNotFoundReply = `No setlist.fm account was found with this username!`
-    private successfulLinkReply = `You have successfully linked your Discord account to your Setlist.fm profile.`
+    private successfulLinkReply = 
+        `You have successfully linked your Discord account to your Setlist.fm profile.\n` +
+        `The text you added to your profile in previous account linking step can now be safely removed.`
 
     private exceptionReplyStrings: Record<string, string> = {
         'AlreadyLinkedToThisUser': this.alreadyLinkedToThisUserReply,
@@ -110,7 +98,6 @@ export class LinkAccount {
         `3. Scroll down to "About" section and copy paste this text anywhere in the "About" text box:\n` +
         `\`\`\`discord:${discordUserId}\`\`\`\n` +
         `5. Click the "Submit" button to save your changes.\n` +
-        `6. Re-run this command or press the "Verify" button of this message to verify your account link.\n`
+        `6. Re-run this command to verify your account link again.\n`
     }
 }
- 
