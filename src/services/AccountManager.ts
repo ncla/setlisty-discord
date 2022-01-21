@@ -81,4 +81,14 @@ export class AccountManager {
         await this.userRepository.deleteAttendedSetlistsForUser(accountIdToUnlink)
         await this.userRepository.deleteUser(accountIdToUnlink)
     }
+
+    public async scheduleRefreshForAccount(discordUserId: string) {
+        const userId = await this.userRepository.getUserIdByDiscordUserId(discordUserId)
+
+        if (userId === undefined) {
+            throw new NoSetlistfmAccountLinked()
+        }
+
+        await this.userRepository.scheduleUserUpdate(userId)
+    }
 }

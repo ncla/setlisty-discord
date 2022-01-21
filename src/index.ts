@@ -24,6 +24,7 @@ import { UserRepository } from "./repository/UserRepository";
 import { UnlinkAccount } from "./interactions/UnlinkAccount";
 import { AccountManager } from "./services/AccountManager";
 import RefreshUser from "./services/RefreshUser";
+import { RefreshAccount } from "./interactions/RefreshAccount";
 
 // See: http://knexjs.org/#typescript-support
 // declare module 'knex/types/tables' {
@@ -79,6 +80,7 @@ client.on('ready', () => {
 
 client.on('interactionCreate', async (interaction: Interaction) => {
     if (interaction.isCommand()) {
+        console.log(interaction.commandName, interaction.options.getSubcommand())
         if (interaction.commandName === 'show') {
             const showSetlistInteraction = new ShowSetlistInteraction(interaction, setlistFinder)
 
@@ -103,17 +105,23 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             ).invoke()
         }
 
-        if (interaction.commandName === 'link-account') {
+        if (interaction.commandName === 'account' && interaction.options.getSubcommand() === 'link') {
             return new LinkAccount(
                 interaction,
                 accountManager,
                 refreshUserService
-                
             ).invoke()
         }
 
-        if (interaction.commandName === 'unlink-account') {
+        if (interaction.commandName === 'account' && interaction.options.getSubcommand() === 'unlink') {
             return new UnlinkAccount(
+                interaction,
+                accountManager
+            ).invoke()
+        }
+
+        if (interaction.commandName === 'account' && interaction.options.getSubcommand() === 'refresh') {
+            return new RefreshAccount(
                 interaction,
                 accountManager
             ).invoke()

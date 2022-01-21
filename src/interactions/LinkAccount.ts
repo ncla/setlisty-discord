@@ -26,6 +26,7 @@ export class LinkAccount {
     protected interactionGuards: Array<Function> = [
         onlyAvailableThroughGuildsConcern,
         mustContainStringParameter('username')
+        // TODO: rate limit guard
     ]
 
     private alreadyLinkedToThisUserReply = 
