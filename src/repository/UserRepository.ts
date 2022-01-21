@@ -24,8 +24,16 @@ export class UserRepository {
             .del()
     }
 
+    // todo: setlist attendeeds repository
     async deleteAttendedSetlistsForUser(userId: number) {
         return await this.knexClient('setlist_attendees')
+            .where('user_id', userId)
+            .del()
+    }
+
+    // todo: user scheduled jobs repository
+    async deleteScheduledJobsForUser(userId: number) {
+        return await this.knexClient('user_update_jobs')
             .where('user_id', userId)
             .del()
     }

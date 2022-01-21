@@ -5,6 +5,7 @@ export async function up(knex: Knex): Promise<void> {
         table.increments('id')
         table.bigInteger('discord_user_id').unique()
         table.string('setlistfm_username').nullable()
+        table.timestamps(true, true)
     })
 
     await knex.schema.createTable('setlist_attendees', (table) => {

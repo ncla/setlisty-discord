@@ -78,6 +78,7 @@ export class AccountManager {
             throw new NoSetlistfmAccountLinked()
         }
 
+        await this.userRepository.deleteScheduledJobsForUser(accountIdToUnlink)
         await this.userRepository.deleteAttendedSetlistsForUser(accountIdToUnlink)
         await this.userRepository.deleteUser(accountIdToUnlink)
     }

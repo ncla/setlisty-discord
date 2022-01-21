@@ -7,6 +7,11 @@ export async function up(knex: Knex): Promise<void> {
         table.enum('status', ['WAITING', 'IN_PROGRESS', 'ERROR', 'COMPLETED']).notNullable()
         table.text('debug', 'longtext')
         table.timestamps(true, true)
+
+        table
+            .foreign('user_id')
+            .references('id')
+            .inTable('users')
     })
 }
 
