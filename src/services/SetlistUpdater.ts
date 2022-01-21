@@ -1,10 +1,10 @@
 import {AxiosResponse} from 'axios';
-import {groupBy} from "./helpers";
-import {SetlistfmAPIRequestClient} from "./request/SetlistFmAPI";
-import {ArtistRepository} from "./repository/ArtistRepository";
+import {groupBy} from "../helpers";
+import {SetlistfmAPIRequestClient} from "../request/SetlistFmAPI";
+import {ArtistRepository} from "../repository/ArtistRepository";
 import dayjs from "dayjs";
-import { SetlistRepository } from './repository/SetlistRepository';
-import { TrackRepository } from './repository/TrackRepository';
+import { SetlistRepository } from '../repository/SetlistRepository';
+import { TrackRepository } from '../repository/TrackRepository';
 
 class SetlistUpdater {
     protected setlistEntries: any[] = []
@@ -58,6 +58,20 @@ class SetlistUpdater {
         this.cleanUp()
     }
 
+    public async runSingleUserUpdate(userId: string) {
+        await this.fetchUserAttendedSetlists(userId)
+
+        // Move to: afterFetch()
+        this.parseSetlistEntries()
+        await this.update()
+
+        const setlistIds = this.setlists.map((setlist: any) => setlist.id)
+
+        this.cleanUp()
+
+        return setlistIds
+    }
+
     protected cleanUp() {
         this.artists = []
         this.setlists = []
@@ -65,11 +79,32 @@ class SetlistUpdater {
         this.setlistEntries = []
     }
 
+    // logic is kinda duplicating from fetchArtistSetlists
+    public async fetchUserAttendedSetlists(userId: string) {
+        const firstPage = await this.setlistRequestClient.fetchUserAttendedSetlists(userId)
+
+        const pageCount = Math.ceil(firstPage.data.total / firstPage.data.itemsPerPage)
+
+        this.pushSetlistEntriesFromPaginationResponse(firstPage)
+
+        let page = 2
+
+        while (page <= pageCount) {
+            await this.setlistRequestClient.fetchUserAttendedSetlists(userId, page).then(response => {
+                this.pushSetlistEntriesFromPaginationResponse(response)
+
+                page++
+            })
+        }
+
+        return this
+    }
+
     public async fetchArtistSetlists(musicbrainzId: string) {
         const firstPage = await this.setlistRequestClient.fetchSetlistsPage(musicbrainzId)
 
         const pageCount = Math.ceil(firstPage.data.total / firstPage.data.itemsPerPage)
-        // const pageCount = 1
+
         this.pushSetlistEntriesFromPaginationResponse(firstPage)
 
         let page = 2

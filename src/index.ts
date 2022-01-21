@@ -14,11 +14,16 @@ import {AutocompleteArtists} from "./autocomplete/Artists";
 import {MusicbrainzRequestClient} from "./request/Musicbrainz";
 import {ShowAnySetlistInteraction} from "./interactions/ShowAnySetlistInteraction";
 import {SetlistfmWebRequestClient} from "./request/SetlistFmWeb";
-import SetlistUpdater from "./setlist-updater";
+import SetlistUpdater from "./services/SetlistUpdater";
 import SetlistFinderWeb from "./services/SetlistFinderWeb";
 import {SetlistFmWebSearchResultsParser} from "./parsers/SetlistFmWebSearchResults";
 import {InteractionGuardException} from "./helpers/exceptions";
 import { TrackRepository } from "./repository/TrackRepository";
+import { LinkAccount } from "./interactions/LinkAccount";
+import { UserRepository } from "./repository/UserRepository";
+import { UnlinkAccount } from "./interactions/UnlinkAccount";
+import { AccountManager } from "./services/AccountManager";
+import { RefreshAccount } from "./interactions/RefreshAccount";
 
 // See: http://knexjs.org/#typescript-support
 // declare module 'knex/types/tables' {
@@ -49,11 +54,17 @@ const setlistFinderWeb = new SetlistFinderWeb(setlistRequestorWeb, setlistFmWebS
 const artistRepo = new ArtistRepository(knexClient)
 const setlistRepo = new SetlistRepository(knexClient)
 const trackRepo = new TrackRepository(knexClient)
+const userRepo = new UserRepository(knexClient)
 const setlistFinder = new SetlistFinder(
     new ArtistRepository(knexClient),
     setlistRepo
 )
 const musicBrainzRequestClient = new MusicbrainzRequestClient()
+
+const accountManager = new AccountManager(
+    setlistRequestorApi,
+    userRepo
+)
 
 client.on('ready', () => {
     console.log(`Client is logged in as ${client.user!.tag} and ready!`);
@@ -83,6 +94,27 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 setlistFinderWeb,
                 new SetlistUpdater(setlistRequestorApi, artistRepo, setlistRepo, trackRepo),
                 setlistRepo
+            ).invoke()
+        }
+
+        if (interaction.commandName === 'account' && interaction.options.getSubcommand() === 'link') {
+            return new LinkAccount(
+                interaction,
+                accountManager
+            ).invoke()
+        }
+
+        if (interaction.commandName === 'account' && interaction.options.getSubcommand() === 'unlink') {
+            return new UnlinkAccount(
+                interaction,
+                accountManager
+            ).invoke()
+        }
+
+        if (interaction.commandName === 'account' && interaction.options.getSubcommand() === 'refresh') {
+            return new RefreshAccount(
+                interaction,
+                accountManager
             ).invoke()
         }
 

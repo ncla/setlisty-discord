@@ -1,3 +1,4 @@
+import { SlashCommandBuilder } from "@discordjs/builders";
 import Config from "./config"
 
 const { REST } = require('@discordjs/rest');
@@ -45,7 +46,32 @@ const commands = [
                 description: 'Set artist Musicbrainz ID manually'
             }
         ]
-    }
+    },
+    new SlashCommandBuilder()
+        .setName('account')
+        .setDescription('Control your account')
+        .addSubcommand(subcommand => 
+            subcommand
+                .setName('link')
+                .setDescription('Link your Setlist.fm account with your current Discord account')
+                .addStringOption(option => 
+                    option
+                        .setName('username')
+                        .setDescription('Username on setlist.fm')
+                        .setRequired(true)
+                )
+        )
+        .addSubcommand(subcommand => 
+            subcommand
+                .setName('unlink')
+                .setDescription('Unlink your Setlist.fm account from your current Discord account and delete associated data')
+        )
+        .addSubcommand(subcommand => 
+            subcommand
+                .setName('refresh')
+                .setDescription('Refresh your account data from setlist.fm')
+        )
+        .toJSON()
 ]
 
 const rest = new REST({ version: '9' }).setToken(Config.discord.token);

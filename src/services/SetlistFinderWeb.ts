@@ -2,11 +2,11 @@ import {SetlistFmWebSearchResultsParser} from "../parsers/SetlistFmWebSearchResu
 import {SetlistfmWebRequestClient} from "../request/SetlistFmWeb";
 import TypedException from "../helpers/exceptions";
 
+export class NoSetlistsFoundException extends TypedException {}
+
 export default class SetlistFinderWeb {
     private setlistFmWebSearchResultsParser: SetlistFmWebSearchResultsParser;
     private setlistWebRequestor: SetlistfmWebRequestClient;
-
-    static NoSetlistsFoundException = class extends TypedException {}
 
     public constructor(
         setlistWebRequestor: SetlistfmWebRequestClient,
@@ -22,7 +22,7 @@ export default class SetlistFinderWeb {
         const setlistResults = this.setlistFmWebSearchResultsParser.parse(searchResults)
 
         if (setlistResults.length === 0) {
-            throw new SetlistFinderWeb.NoSetlistsFoundException()
+            throw new NoSetlistsFoundException()
         }
 
         return setlistResults[0].setlistId

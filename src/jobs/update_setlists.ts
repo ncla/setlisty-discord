@@ -1,4 +1,4 @@
-import SetlistUpdater from "../setlist-updater";
+import SetlistUpdater from "../services/SetlistUpdater";
 import knexClient, {now} from "../helpers/knexClient";
 import {SetlistfmAPIRequestClient} from "../request/SetlistFmAPI";
 import {ArtistRepository} from "../repository/ArtistRepository";

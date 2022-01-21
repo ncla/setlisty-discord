@@ -15,11 +15,11 @@ export class SetlistfmAPIRequestClient {
         })
     }
 
-    public async fetchSetlist(setlistId: string) {
+    public async fetchSetlist(setlistId: string): Promise<AxiosResponse<any>> {
         return await this.axios.get(`setlist/${setlistId}`)
     }
 
-    public async fetchSetlistsPage(musicbrainzId: string, page?: number) {
+    public async fetchSetlistsPage(musicbrainzId: string, page?: number): Promise<AxiosResponse<any>> {
         const requestConfig: AxiosRequestConfig = {
             params: {
                 p: page
@@ -33,5 +33,19 @@ export class SetlistfmAPIRequestClient {
         const response = await this.axios.get(`artist/${musicbrainzId}`)
 
         return response.data.name
+    }
+
+    public async fetchUser(username: string): Promise<AxiosResponse<any>> {
+        return await this.axios.get(`user/${username}`)
+    }
+
+    public async fetchUserAttendedSetlists(userId: string, page?: number): Promise<AxiosResponse<any>> {
+        const requestConfig: AxiosRequestConfig = {
+            params: {
+                p: page
+            }
+        }
+
+        return await this.axios.get(`user/${userId}/attended`, requestConfig)
     }
 }

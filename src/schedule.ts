@@ -6,6 +6,7 @@ const startupDelayToAvoidCPUSpike = Config.environment == "production" ? 30 : 0;
 
 const jobs:Array<Job> = [
     new Job('update_setlists', 1),
+    new Job('update_users', 1),
     new Job('update_events', 5)
 ]
 
