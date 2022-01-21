@@ -1,5 +1,4 @@
 import { UserRepository } from "../repository/UserRepository";
-import { SetlistfmAPIRequestClient } from "../request/SetlistFmAPI";
 import SetlistUpdater from "./SetlistUpdater";
 
 export default class RefreshUser {

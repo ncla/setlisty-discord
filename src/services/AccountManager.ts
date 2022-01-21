@@ -35,10 +35,10 @@ export class AccountManager {
             throw new AccountIsLinkedToSomeoneElse()
         }
 
-        let response;
+        let apiUserResponse;
 
         try {
-            response = await this.setlistFmApiRequestClient.fetchUser(setlistFmUsername)
+            apiUserResponse = await this.setlistFmApiRequestClient.fetchUser(setlistFmUsername)
         } catch (err) {
             if (axios.isAxiosError(err) && err.response && err.response.status === 404) {
                 throw new SetlistFmAccountNotFound()
@@ -49,7 +49,7 @@ export class AccountManager {
 
         const stringToLookFor = `discord:${discordUserId}`
 
-        const stringExistsInAboutSection = response.data.about !== undefined && response.data.about.indexOf(stringToLookFor) !== -1
+        const stringExistsInAboutSection = apiUserResponse.data.about !== undefined && apiUserResponse.data.about.indexOf(stringToLookFor) !== -1
 
         if (stringExistsInAboutSection === false) {
             throw new MissingStringFromAboutSection()
@@ -68,15 +68,15 @@ export class AccountManager {
     }
 
     public async unlinkAccount(discordUserId: string) {
-        const accountIdToUnlink = await this.userRepository.getUserIdByDiscordUserId(discordUserId)
+        const userIdToUnlink = await this.userRepository.getUserIdByDiscordUserId(discordUserId)
 
-        if (accountIdToUnlink === undefined) {
+        if (userIdToUnlink === undefined) {
             throw new NoSetlistfmAccountLinked()
         }
 
-        await this.userRepository.deleteScheduledJobsForUser(accountIdToUnlink)
-        await this.userRepository.deleteAttendedSetlistsForUser(accountIdToUnlink)
-        await this.userRepository.deleteUser(accountIdToUnlink)
+        await this.userRepository.deleteScheduledJobsForUser(userIdToUnlink)
+        await this.userRepository.deleteAttendedSetlistsForUser(userIdToUnlink)
+        await this.userRepository.deleteUser(userIdToUnlink)
     }
 
     public async scheduleRefreshForAccount(discordUserId: string) {
