@@ -17,7 +17,7 @@ export default class RefreshUser {
         const user = await this.userRepository.getUserById(userId)
 
         if (!user) {
-            throw new Error(`User ${userId} not found`)
+            throw new Error(`User with ID ${userId} was not found`)
         }
 
         const setlistfmUsername = user.setlistfm_username
