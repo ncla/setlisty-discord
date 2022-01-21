@@ -12,7 +12,7 @@ export class RefreshAccount {
         // TODO: rate limit guard
     ]
 
-    private noSetlistFmAccountLinkedReply: string = `You have no account to update!`
+    private noSetlistFmAccountLinkedReply: string = `You have no setlist.fm account linked to your profile that we could refresh!`
     private successfulRefreshReply = `Scheduled task has been dispatched to update your profile with newest data from setlist.fm.\n` +
         `Your profile should update automatically soon!`
 
