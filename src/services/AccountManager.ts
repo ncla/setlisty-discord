@@ -1,8 +1,7 @@
+import axios from 'axios';
 import TypedException from "../helpers/exceptions";
 import { UserRepository } from "../repository/UserRepository";
 import { SetlistfmAPIRequestClient } from "../request/SetlistFmAPI";
-import SetlistUpdater from "./SetlistUpdater";
-import axios from 'axios';
 
 export class AlreadyLinkedToThisUser extends TypedException {}
 export class AccountIsLinkedToSomeoneElse extends TypedException {}
@@ -13,16 +12,13 @@ export class NoSetlistfmAccountLinked extends TypedException {}
 export class AccountManager {
     protected setlistFmApiRequestClient: SetlistfmAPIRequestClient
     protected userRepository: UserRepository;
-    protected setlistUpdater: SetlistUpdater;
 
     constructor(
         setlistFmApiRequestClient: SetlistfmAPIRequestClient,
         userRepository: UserRepository,
-        setlistUpdater: SetlistUpdater
     ) {
         this.setlistFmApiRequestClient = setlistFmApiRequestClient
         this.userRepository = userRepository
-        this.setlistUpdater = setlistUpdater
     }
 
     public async linkAccount(discordUserId: string, setlistFmUsername: string) {

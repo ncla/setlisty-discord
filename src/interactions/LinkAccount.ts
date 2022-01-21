@@ -14,14 +14,12 @@
 
 import { CommandInteraction, InteractionReplyOptions, MessageEmbed } from "discord.js";
 import TypedException from "../helpers/exceptions";
-import { AccountManager, MissingStringFromAboutSection } from "../services/AccountManager";
 import { mustContainStringParameter, onlyAvailableThroughGuildsConcern } from "../helpers/interaction_guards";
-import RefreshUser from "../services/RefreshUser";
+import { AccountManager, MissingStringFromAboutSection } from "../services/AccountManager";
 
 export class LinkAccount {
     protected interaction: CommandInteraction
     protected accountManager: AccountManager;
-    protected refreshUserService: RefreshUser;
 
     protected interactionGuards: Array<Function> = [
         onlyAvailableThroughGuildsConcern,
@@ -47,11 +45,9 @@ export class LinkAccount {
     constructor(
         interaction: CommandInteraction,
         accountManager: AccountManager,
-        refreshUserService: RefreshUser,
     ) {
         this.interaction = interaction;
         this.accountManager = accountManager;
-        this.refreshUserService = refreshUserService;
     }
 
     protected async runInteractionGuards() {

@@ -23,7 +23,6 @@ import { LinkAccount } from "./interactions/LinkAccount";
 import { UserRepository } from "./repository/UserRepository";
 import { UnlinkAccount } from "./interactions/UnlinkAccount";
 import { AccountManager } from "./services/AccountManager";
-import RefreshUser from "./services/RefreshUser";
 import { RefreshAccount } from "./interactions/RefreshAccount";
 
 // See: http://knexjs.org/#typescript-support
@@ -61,16 +60,10 @@ const setlistFinder = new SetlistFinder(
     setlistRepo
 )
 const musicBrainzRequestClient = new MusicbrainzRequestClient()
-// did the concern of single instance disappear for SetlistUpdater? please check again
-const setlistUpdater = new SetlistUpdater(setlistRequestorApi, artistRepo, setlistRepo, trackRepo)
+
 const accountManager = new AccountManager(
     setlistRequestorApi,
-    userRepo,
-    new SetlistUpdater(setlistRequestorApi, artistRepo, setlistRepo, trackRepo)
-)
-const refreshUserService = new RefreshUser(
-    userRepo,
-    new SetlistUpdater(setlistRequestorApi, artistRepo, setlistRepo, trackRepo)
+    userRepo
 )
 
 client.on('ready', () => {
@@ -80,7 +73,6 @@ client.on('ready', () => {
 
 client.on('interactionCreate', async (interaction: Interaction) => {
     if (interaction.isCommand()) {
-        console.log(interaction.commandName, interaction.options.getSubcommand())
         if (interaction.commandName === 'show') {
             const showSetlistInteraction = new ShowSetlistInteraction(interaction, setlistFinder)
 
@@ -108,8 +100,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         if (interaction.commandName === 'account' && interaction.options.getSubcommand() === 'link') {
             return new LinkAccount(
                 interaction,
-                accountManager,
-                refreshUserService
+                accountManager
             ).invoke()
         }
 
