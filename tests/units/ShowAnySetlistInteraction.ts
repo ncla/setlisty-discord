@@ -1,7 +1,7 @@
 import {ShowAnySetlistInteraction} from "../../src/interactions/ShowAnySetlistInteraction";
 import sinon, {SinonStubbedInstance} from "sinon";
 import {CommandInteraction, CommandInteractionOptionResolver} from "discord.js";
-import SetlistFinderWeb from "../../src/services/SetlistFinderWeb";
+import SetlistFinderWeb, { NoSetlistsFoundException } from "../../src/services/SetlistFinderWeb";
 import SetlistUpdater from "../../src/services/SetlistUpdater";
 import {SetlistRepository} from "../../src/repository/SetlistRepository";
 import {expect} from "chai";
@@ -36,7 +36,7 @@ describe('ShowAnySetlistInteraction', function () {
         interaction.inGuild.returns(true)
         interactionOptionsResolver.getString.withArgs('query').returns('asdf')
 
-        setlistWebFinder.findSetlistIdThroughWebSearch.throws(new SetlistFinderWeb.NoSetlistsFoundException())
+        setlistWebFinder.findSetlistIdThroughWebSearch.throws(new NoSetlistsFoundException())
 
         await showAnyInteraction.invoke()
 
